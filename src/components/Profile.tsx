@@ -48,8 +48,8 @@ import {
   Sparkles,
   Info
 } from 'lucide-react';
-import { db } from '../lib/firebase';
 import { 
+  db,
   doc, 
   getDoc, 
   collection, 
@@ -61,7 +61,7 @@ import {
   deleteDoc,
   arrayUnion,
   arrayRemove
-} from 'firebase/firestore';
+} from '../lib/firebase';
 import { UserProfile, Post } from '../types';
 import { PostCard } from './PostCard';
 
@@ -261,12 +261,51 @@ export const Profile: React.FC<ProfileProps> = ({
     }
   }, [activeProfile]);
 
-  // Fetch visited profile, connections and posts
+  // Real-time subscription for active profile's posts (either logged-in user or visited profile)
   useEffect(() => {
-    if (!viewedProfileId || viewedProfileId === userProfile?.uid) {
-      setVisitedProfile(null);
+    const targetUid = activeProfile?.uid;
+    if (!targetUid) {
       setVisitedPosts([]);
       return;
+    }
+
+    const postsQuery = query(
+      collection(db, 'posts'), 
+      where('authorId', '==', targetUid)
+    );
+    const unsubPosts = onSnapshot(postsQuery, (snapshot) => {
+      const loadedPosts = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as Post[];
+      loadedPosts.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      setVisitedPosts(loadedPosts);
+    }, (error) => {
+      console.error("Error listening to user posts:", error);
+    });
+
+    return () => {
+      unsubPosts();
+    };
+  }, [activeProfile?.uid]);
+
+  // Fetch visited profile and subscribe to connections
+  useEffect(() => {
+    // Connections subscription is global and should always be active
+    const connectionsQuery = query(collection(db, 'connections'));
+    const unsubConnections = onSnapshot(connectionsQuery, (snapshot) => {
+      const loaded = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      setConnections(loaded);
+    });
+
+    if (!viewedProfileId || viewedProfileId === userProfile?.uid) {
+      setVisitedProfile(null);
+      return () => {
+        unsubConnections();
+      };
     }
 
     setLoadingProfile(true);
@@ -284,34 +323,7 @@ export const Profile: React.FC<ProfileProps> = ({
       setLoadingProfile(false);
     });
 
-    // Real-time subscription for visited user's posts
-    const postsQuery = query(
-      collection(db, 'posts'), 
-      where('authorId', '==', viewedProfileId)
-    );
-    const unsubPosts = onSnapshot(postsQuery, (snapshot) => {
-      const loadedPosts = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      })) as Post[];
-      loadedPosts.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-      setVisitedPosts(loadedPosts);
-    }, (error) => {
-      console.error("Error listening to user posts:", error);
-    });
-
-    // Real-time connections subscription
-    const connectionsQuery = query(collection(db, 'connections'));
-    const unsubConnections = onSnapshot(connectionsQuery, (snapshot) => {
-      const loaded = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-      setConnections(loaded);
-    });
-
     return () => {
-      unsubPosts();
       unsubConnections();
     };
   }, [viewedProfileId, userProfile]);
@@ -324,8 +336,8 @@ export const Profile: React.FC<ProfileProps> = ({
     )
   );
 
-  const handleGrowTogether = async (targetUserId?: string) => {
-    const target = targetUserId || activeProfile?.uid;
+  const handleGrowTogether = async (targetUserId?: any) => {
+    const target = (targetUserId && typeof targetUserId === 'string' ? targetUserId : null) || activeProfile?.uid;
     if (!userProfile || !target) return;
     try {
       const conn = connections.find(c => 
@@ -963,7 +975,7 @@ export const Profile: React.FC<ProfileProps> = ({
                   animate={{ opacity: 1 }} 
                   className="space-y-7"
                 >
-                  <p className="text-[14px] text-krishx-dark-700/85 font-medium leading-relaxed whitespace-pre-wrap">
+                  <p className="text-[15px] md:text-[16px] text-krishx-dark-700/90 font-medium leading-relaxed tracking-wide whitespace-pre-wrap">
                     {editSummary || 'मैं एक प्रगतिशील भारतीय किसान हूँ जो पर्यावरण-अनुकूल और आधुनिक कृषि विधियों से फसल उत्पादन बढ़ाता हूँ।'}
                   </p>
 
@@ -980,7 +992,7 @@ export const Profile: React.FC<ProfileProps> = ({
 
                   <div className="bg-gradient-to-br from-white/90 to-[#FAF9F5]/40 p-5 rounded-[1.5rem] border border-krishx-earth-200/40">
                     <span className="text-[9px] font-bold text-krishx-dark-700/50 uppercase tracking-[0.15em] block mb-2">Career & Sowing Goals</span>
-                    <p className="text-[13px] text-krishx-dark-700/90 font-medium leading-relaxed">
+                    <p className="text-[14px] text-krishx-dark-700 leading-relaxed tracking-wide font-medium">
                       {editGoals}
                     </p>
                   </div>
@@ -1459,7 +1471,7 @@ export const Profile: React.FC<ProfileProps> = ({
                 }`}
               >
                 <FileText className="w-4 h-4" />
-                Farmer Posts ({visitedProfile ? visitedPosts.length : 1})
+                Farmer Posts ({visitedPosts.length})
               </button>
 
               <button

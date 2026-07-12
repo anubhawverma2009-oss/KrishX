@@ -7,6 +7,8 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { 
   User, 
   signInWithPopup, 
+  signInWithRedirect,
+  getRedirectResult,
   signOut, 
   onAuthStateChanged,
   signInWithEmailAndPassword,
@@ -15,6 +17,26 @@ import {
 import { doc, getDoc, setDoc, isOffline, seedOfflineData, handleFirestoreError, OperationType } from '../lib/firebase';
 import { auth, googleProvider, db } from '../lib/firebase';
 import { UserProfile } from '../types';
+
+// Safely disable detailed AuthDebug logs in production to avoid exposing configuration or spamming console
+if (typeof window !== 'undefined' && (import.meta as any).env?.PROD) {
+  const originalLog = console.log;
+  const originalWarn = console.warn;
+  const originalError = console.error;
+
+  console.log = (...args: any[]) => {
+    if (args[0] && typeof args[0] === 'string' && args[0].includes('[AuthDebug]')) return;
+    originalLog(...args);
+  };
+  console.warn = (...args: any[]) => {
+    if (args[0] && typeof args[0] === 'string' && args[0].includes('[AuthDebug]')) return;
+    originalWarn(...args);
+  };
+  console.error = (...args: any[]) => {
+    if (args[0] && typeof args[0] === 'string' && args[0].includes('[AuthDebug]')) return;
+    originalError(...args);
+  };
+}
 
 interface AuthContextType {
   user: User | null;
@@ -145,6 +167,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     }
 
+    // Process redirect sign-in results if arriving from a redirect flow
+    console.log("[AuthDebug] Checking for redirect result from Firebase Auth...");
+    getRedirectResult(auth)
+      .then(async (result) => {
+        if (result?.user) {
+          console.log("[AuthDebug] getRedirectResult successful! User UID:", result.user.uid, "Email:", result.user.email);
+          setUser(result.user);
+          await syncProfile(result.user);
+        }
+      })
+      .catch((err) => {
+        console.error("[AuthDebug] Error resolving getRedirectResult:", err);
+      });
+
     console.log("[AuthDebug] Subscribing to real Firebase onAuthStateChanged...");
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       console.log("[AuthDebug] onAuthStateChanged callback fired. User:", firebaseUser ? firebaseUser.email : "null");
@@ -181,15 +217,51 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       localStorage.removeItem('krishx_mock_user');
     }
 
+    // Detect if running inside an iframe, embedded preview, sandbox, or restricted window context
+    const isIframe = typeof window !== 'undefined' && (
+      window.self !== window.top ||
+      window.parent !== window ||
+      document.referrer.includes("run.app") ||
+      !window.opener
+    );
+    console.log("[AuthDebug] Environment detection: isIframe =", isIframe);
+
     try {
       console.log("[AuthDebug] Calling signOut() to clear stale sessions...");
       await auth.signOut();
       
-      console.log("[AuthDebug] Calling signInWithPopup(auth, googleProvider)...");
-      const result = await signInWithPopup(auth, googleProvider);
-      console.log("[AuthDebug] signInWithPopup completed successfully! User UID:", result.user.uid, "Email:", result.user.email);
+      // If we are in an iframe, popup flows are heavily restricted or blocked, so we must use signInWithRedirect
+      if (isIframe) {
+        console.log("[AuthDebug] Running inside restricted/iframe environment. Automatically using signInWithRedirect() instead of signInWithPopup() to ensure compatibility.");
+        await signInWithRedirect(auth, googleProvider);
+        return;
+      }
+
+      try {
+        console.log("[AuthDebug] Attempting signInWithPopup(auth, googleProvider)...");
+        const result = await signInWithPopup(auth, googleProvider);
+        console.log("[AuthDebug] signInWithPopup completed successfully! User UID:", result.user.uid, "Email:", result.user.email);
+      } catch (popupErr: any) {
+        console.warn("[AuthDebug] signInWithPopup failed. Checking if we should fall back to signInWithRedirect...");
+        console.warn("[AuthDebug]   - Error Code:", popupErr.code);
+        console.warn("[AuthDebug]   - Error Message:", popupErr.message);
+
+        const isPopupBlockedOrClosed = [
+          'auth/popup-closed-by-user',
+          'auth/popup-blocked',
+          'auth/operation-not-supported-in-this-environment',
+          'auth/cancelled-popup-request'
+        ].includes(popupErr.code) || popupErr.message?.toLowerCase().includes('popup');
+
+        if (isPopupBlockedOrClosed) {
+          console.log("[AuthDebug] Popup blocked, closed, or unsupported. Automatically falling back to signInWithRedirect()...");
+          await signInWithRedirect(auth, googleProvider);
+        } else {
+          throw popupErr;
+        }
+      }
     } catch (err: any) {
-      console.error("[AuthDebug] Google Auth Error during signInWithPopup:");
+      console.error("[AuthDebug] Google Auth Error during flow:");
       console.error("[AuthDebug]   - Error Code:", err.code);
       console.error("[AuthDebug]   - Error Message:", err.message);
       console.error("[AuthDebug]   - Full Error Object:", JSON.stringify(err, Object.getOwnPropertyNames(err)));
@@ -297,7 +369,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUserProfile(mergedProfile);
         setUser(firebaseUser);
       } catch (e: any) {
-        console.error("[AuthDebug] Real Firebase Auth sign-in failed with error code:", e.code, "message:", e.message);
+        console.warn("[AuthDebug] Real Firebase Auth sign-in failed with error code:", e.code, "message:", e.message);
         
         const isNetworkOffline = !navigator.onLine || e.code === 'auth/network-request-failed' || e.message?.includes('network');
         

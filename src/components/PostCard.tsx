@@ -2,8 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { MoreVertical, Edit, Trash2, Check, Clock, UserPlus, MapPin, Heart, MessageSquare, Bookmark, Share2 } from 'lucide-react';
 import { Post, UserProfile, Comment } from '../types';
-import { db } from '../lib/firebase';
-import { doc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
+import { db, doc, updateDoc, arrayUnion, arrayRemove } from '../lib/firebase';
 
 // Subtle high-quality client-side translation helper for agrarian content
 const translatePostContent = (text: string, toLanguage: 'hi' | 'en'): string => {
@@ -374,7 +373,7 @@ export const PostCard: React.FC<PostCardProps> = ({
         </div>
 
         {/* Post Content */}
-        <p className="text-sm text-krishx-dark-900 leading-relaxed font-medium mb-2 whitespace-pre-wrap">
+        <p className="text-[15px] md:text-[16px] text-krishx-dark-900 leading-relaxed tracking-wide font-medium mb-3 whitespace-pre-wrap">
           {showTranslation 
             ? translatePostContent(post.content, /[\u0900-\u097F]/.test(post.content) ? 'en' : 'hi') 
             : post.content}

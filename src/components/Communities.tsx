@@ -761,6 +761,35 @@ export const Communities: React.FC<CommunitiesProps> = ({ searchQuery = '' }) =>
                       </div>
                     </div>
 
+                    {/* Pinned Announcement Section */}
+                    <div className="bg-gradient-to-r from-amber-50/70 via-white to-amber-50/30 border-l-4 border-l-amber-500 border border-krishx-earth-200/50 rounded-[2rem] p-6 shadow-xs space-y-3">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2 text-amber-800">
+                          <span className="text-sm">📌</span>
+                          <span className="text-[10px] font-black uppercase tracking-[0.2em]">Pinned Guidelines & Resource (मुख्य दिशानिर्देश)</span>
+                        </div>
+                        <span className="bg-amber-100 text-amber-800 text-[9px] font-extrabold uppercase tracking-widest px-2.5 py-1 rounded-full border border-amber-200/50">Pinned</span>
+                      </div>
+                      
+                      <h4 className="text-[14px] md:text-[15px] font-display font-black text-krishx-dark-900 leading-snug">
+                        {activeCommunity.id === 'wheat' && 'गेहूं की वैज्ञानिक खेती और समय पर सिंचाई प्रबंधन निर्देशिका'}
+                        {activeCommunity.id === 'dairy' && 'दुग्ध उत्पादन वृद्धि और स्वच्छ पशुपालन के वैज्ञानिक नियम'}
+                        {activeCommunity.id === 'organic' && 'जीवामृत व प्राकृतिक खाद तैयार करने की प्रामाणिक कृषि विधि'}
+                        {activeCommunity.id === 'vegetables' && 'सब्जी फसलों में ड्रिप सिंचाई और पॉलीहाउस कीट नियंत्रण विधियां'}
+                        {activeCommunity.id === 'rice' && 'बासमती धान नर्सरी प्रबंधन व जल संरक्षण महत्वपूर्ण सूचना'}
+                        {activeCommunity.id === 'sugarcane' && 'गन्ने की ट्रेंच विधि बुवाई और लाल सड़न रोग बचाव संदर्शिका'}
+                      </h4>
+                      
+                      <p className="text-[14px] md:text-[15px] text-krishx-dark-700 leading-relaxed tracking-wide font-medium">
+                        {activeCommunity.id === 'wheat' && 'सभी गेहूं उत्पादक ध्यान दें: बुवाई के 21-25 दिनों के भीतर पहली सिंचाई (CRI स्टेज) फसल के विकास के लिए अत्यंत महत्वपूर्ण है। यूरिया की पहली खुराक भी इसी समय दें ताकि कल्ले भरपूर निकलें।'}
+                        {activeCommunity.id === 'dairy' && 'दुधारू पशुओं को संतुलित आहार में हरा चारा, सूखा चारा और पशु आहार का 1:1:1 अनुपात दें। कैल्शियम और मिनरल मिक्सचर प्रतिदिन 50 ग्राम देने से दूध उत्पादन और पशु स्वास्थ्य दोनों उत्तम रहता है।'}
+                        {activeCommunity.id === 'organic' && 'जीवामृत निर्माण: 10 किलो गाय का ताजा गोबर, 10 लीटर गोमूत्र, 2 किलो पुराना गुड़, 2 किलो चने का बेसन और 1 मुट्ठी खेत की उपजाऊ मिट्टी को 200 लीटर पानी में मिलाकर छाया में रखें। दिन में दो बार हिलाएं, 7 दिन में तैयार।'}
+                        {activeCommunity.id === 'vegetables' && 'सब्जी उत्पादकों के लिए सलाह: टमाटर, मिर्च और बैंगन की फसलों में रस चूसक कीटों से बचाव के लिए पीले चिपचिपे कार्ड (Yellow Sticky Traps) प्रति एकड़ 15-20 की संख्या में स्थापित करें।'}
+                        {activeCommunity.id === 'rice' && 'धान उत्पादकों के लिए वैज्ञानिक निर्देश: खरपतवार नियंत्रण के लिए रोपाई के 3 दिनों के भीतर प्रीतिलाक्लोर (Pretilachlor) का सुरक्षित उपयोग करें। जल निकासी और नमी का संतुलन बनाए रखें।'}
+                        {activeCommunity.id === 'sugarcane' && 'गन्ना किसानों के लिए संदेश: लाल सड़न (Red Rot) रोग रोधी किस्मों जैसे Co 15023 या Co 0118 का ही चुनाव करें। बुवाई से पूर्व बीज के टुकड़ों को ट्राइकोडर्मा घोल से अवश्य उपचारित करें।'}
+                      </p>
+                    </div>
+
                     {/* Discussions List Feed */}
                     <div className="space-y-6">
                       {activeCommunityPosts.map((post) => {
@@ -806,7 +835,7 @@ export const Communities: React.FC<CommunitiesProps> = ({ searchQuery = '' }) =>
                             </div>
 
                             {/* Content text */}
-                            <p className="text-[14px] text-krishx-dark-900/90 font-medium leading-relaxed whitespace-pre-wrap">
+                            <p className="text-[15px] md:text-[16px] text-krishx-dark-900/90 leading-relaxed tracking-wide font-medium whitespace-pre-wrap">
                               {post.content}
                             </p>
 

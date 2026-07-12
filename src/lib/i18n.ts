@@ -6,7 +6,7 @@
 export const translations = {
   hi: {
     appName: 'KrishX',
-    slogan: 'पेशेवर कृषि नेटवर्क',
+    slogan: 'भारत के किसानों का अपना डिजिटल प्रोफेशनल नेटवर्क',
     nav: {
       home: 'होम',
       ai: 'एआई',
@@ -97,7 +97,7 @@ export const translations = {
   },
   en: {
     appName: 'KrishX',
-    slogan: 'Professional Agriculture Network',
+    slogan: "India's Professional Network for Farmers",
     nav: {
       home: 'Home',
       ai: 'AI',

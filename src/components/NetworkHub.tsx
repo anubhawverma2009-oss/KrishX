@@ -27,7 +27,7 @@ export const NetworkHub: React.FC<NetworkHubProps> = ({ onViewProfile }) => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex flex-col gap-1">
           <h2 className="text-2xl md:text-3xl font-display font-bold text-krishx-dark-900 tracking-tight">
-            कृषि नेटवर्क (Agri Network)
+            {t.network.title}
           </h2>
           <p className="text-[11px] font-semibold text-krishx-dark-700/60 uppercase tracking-[0.2em] mt-1">
             Connect • Learn • Grow together

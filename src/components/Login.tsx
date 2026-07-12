@@ -603,7 +603,7 @@ export const Login: React.FC = () => {
                 Krish<span className="text-emerald-400">X</span>
               </h1>
               <p className="text-[9px] uppercase tracking-wider font-semibold text-emerald-100/50 mt-0.5">
-                {isEn ? "Agri Professional Network" : "कृषि प्रोफेशनल नेटवर्क"}
+                {isEn ? "India's Professional Network for Farmers" : "भारत के किसानों का अपना डिजिटल प्रोफेशनल नेटवर्क"}
               </p>
             </div>
           </div>
@@ -629,7 +629,7 @@ export const Login: React.FC = () => {
                   Krish<span className="text-emerald-400">X</span>
                 </h1>
                 <p className="text-[8px] uppercase tracking-wider font-semibold text-emerald-100/50 mt-0.5">
-                  {isEn ? "Agri Professional Network" : "कृषि प्रोफेशनल नेटवर्क"}
+                  {isEn ? "India's Professional Network for Farmers" : "भारत के किसानों का अपना डिजिटल प्रोफेशनल नेटवर्क"}
                 </p>
               </div>
             </motion.div>
@@ -810,7 +810,7 @@ export const Login: React.FC = () => {
                 className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-500/10 border border-emerald-400/20 rounded-full text-emerald-400 text-[10px] font-bold uppercase tracking-wider mb-4 w-fit"
               >
                 <Sparkles className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
-                <span>{isEn ? "India's Digital Professional Network" : "भारत का डिजिटल प्रोफेशनल नेटवर्क"}</span>
+                <span>{isEn ? "India's Professional Network for Farmers" : "भारत के किसानों का अपना डिजिटल प्रोफेशनल नेटवर्क"}</span>
               </motion.div>
               
               <motion.h2
@@ -837,9 +837,9 @@ export const Login: React.FC = () => {
                 className="mt-5 text-sm sm:text-base text-emerald-100/80 leading-relaxed font-medium"
               >
                 {isEn ? (
-                  "India's digital professional network connecting certified farmers, agricultural scientists, and students."
+                  "India's Professional Network for Farmers connecting certified farmers, agricultural experts, students and opportunities."
                 ) : (
-                  "प्रमाणित किसानों, कृषि वैज्ञानिकों और छात्रों को जोड़ने वाला भारत का डिजिटल प्रोफेशनल नेटवर्क।"
+                  "भारत के किसानों का अपना डिजिटल प्रोफेशनल नेटवर्क जो प्रमाणित किसानों, कृषि विशेषज्ञों, छात्रों और अवसरों को जोड़ता है।"
                 )}
               </motion.p>
 

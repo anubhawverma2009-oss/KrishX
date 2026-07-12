@@ -20,7 +20,7 @@ service cloud.firestore {
     // User Profile Rules
     match /users/{userId} {
       allow read: if isSignedIn();
-      allow write: if isSignedIn();
+      allow write: if isOwner(userId);
     }
     
     // Posts collection

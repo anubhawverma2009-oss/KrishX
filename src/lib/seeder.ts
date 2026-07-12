@@ -196,6 +196,49 @@ export async function seedInitialData() {
           likes: ['demo-expert-1'],
           comments: [],
           createdAt: new Date(Date.now() - 14400000).toISOString()
+        },
+        {
+          id: 'post-3',
+          authorId: 'demo-student-1',
+          authorName: 'शुभम चौधरी',
+          authorPhotoURL: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&q=80&w=200',
+          authorKrishXId: 'KX-MH-102938',
+          authorBadges: ['pioneer', 'helper'],
+          content: '🌾 सफलता की कहानी (Success Story): नासिक के प्रगतिशील युवा कृषक अमित पाटिल ने इस साल ड्रिप सिंचाई और मल्चिंग पेपर तकनीक का प्रयोग कर टमाटर की रिकार्ड पैदावार हासिल की है। \n\nपारंपरिक खेती की तुलना में पानी की खपत 40% कम हुई और टमाटरों का आकार व गुणवत्ता बाजार में नंबर-1 रही, जिससे उन्हें मंडी में ₹45 प्रति किलो का भाव मिला। तकनीक का सही प्रयोग ही कृषि को लाभ का व्यवसाय बना सकता है। युवा किसानों के लिए यह एक उत्तम मिसाल है!',
+          imageUrl: 'https://images.unsplash.com/photo-1592417817098-8f3d6eb19675?auto=format&fit=crop&q=80&w=600',
+          category: 'Success Story',
+          topic: 'सब्जी उत्पादन (Vegetable Farming)',
+          likes: ['demo-farmer-1', 'demo-expert-1'],
+          comments: [],
+          createdAt: new Date(Date.now() - 28800000).toISOString()
+        },
+        {
+          id: 'post-4',
+          authorId: 'demo-expert-1',
+          authorName: 'डॉ. आरती सिंह',
+          authorPhotoURL: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&q=80&w=200',
+          authorKrishXId: 'KX-DL-492104',
+          authorBadges: ['expert', 'helper'],
+          content: '📢 महत्वपूर्ण सरकारी योजना (Government Schemes): भारत सरकार की "पीएम-कुसुम योजना (PM-KUSUM)" के तहत सोलर वाटर पंप लगवाने के लिए ऑनलाइन आवेदन पुनः प्रारंभ हो चुके हैं। \n\nइस योजना के तहत किसानों को खेतों में सोलर पंप लगाने के लिए केंद्र व राज्य सरकार द्वारा 60% तक की सब्सिडी प्रदान की जा रही है। इससे बिजली की निर्भरता खत्म होगी और सिंचाई का खर्च शून्य हो जाएगा। आवेदन के लिए आधिकारिक वेबसाइट pmkusum.mnre.gov.in पर विजिट करें या अपने नजदीकी कृषि विभाग से संपर्क करें।',
+          category: 'Knowledge',
+          topic: 'जैविक खेती (Organic Farming)',
+          likes: ['demo-farmer-1', 'demo-student-1'],
+          comments: [],
+          createdAt: new Date(Date.now() - 43200000).toISOString()
+        },
+        {
+          id: 'post-5',
+          authorId: 'demo-farmer-1',
+          authorName: 'रमेश कुमार',
+          authorPhotoURL: 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=200',
+          authorKrishXId: 'KX-PB-774012',
+          authorBadges: ['pioneer', 'expert'],
+          content: '📊 आज का मंडी भाव (Market Prices):\n\nकिसान भाइयों, आज पंजाब और हरियाणा की विभिन्न अनाज मंडियों में नई फसल के भाव इस प्रकार रहे:\n- गेहूं (उन्नत किस्म): ₹2,275 - ₹2,450 प्रति क्विंटल (मजबूत मांग)\n- सरसों (न्यूनतम 42% तेल): ₹5,400 - ₹5,850 प्रति क्विंटल\n- देसी चना: ₹6,100 - ₹6,450 प्रति क्विंटल\n\nमौसम साफ होने के कारण आवक में तेजी देखी जा रही है। मंडियों में अपनी उपज सुखाकर ही लाएं ताकि सही दाम मिल सके। आपके क्षेत्र की मंडी में आज क्या भाव रहा? नीचे कमेंट में साझा करें!',
+          category: 'Experience',
+          topic: 'गेहूं उत्पादक संघ (Wheat Farmers)',
+          likes: ['demo-student-1', 'demo-expert-1'],
+          comments: [],
+          createdAt: new Date(Date.now() - 86400000).toISOString()
         }
       ];
 

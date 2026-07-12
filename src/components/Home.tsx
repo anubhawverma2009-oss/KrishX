@@ -839,7 +839,7 @@ export const Home: React.FC<HomeProps> = ({ setActiveTab, onViewProfile }) => {
                   </div>
 
                   {/* Post Content */}
-                  <p className="text-sm text-krishx-dark-900 leading-relaxed font-medium mb-4 whitespace-pre-wrap">
+                  <p className="text-[15px] md:text-[16px] text-krishx-dark-900 leading-relaxed tracking-wide font-medium mb-4 whitespace-pre-wrap">
                     {post.content}
                   </p>
 
