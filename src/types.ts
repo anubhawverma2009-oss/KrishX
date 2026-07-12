@@ -91,3 +91,17 @@ export interface ChatMessage {
   followUpQuestions?: string[];
   isThinking?: boolean;
 }
+
+export interface AppNotification {
+  id: string;
+  userId: string;
+  senderId?: string;
+  senderName?: string;
+  senderPhoto?: string;
+  type: 'like' | 'comment' | 'connection' | 'alert' | 'system';
+  title: string;
+  body: string;
+  postId?: string;
+  createdAt: string;
+  read: boolean;
+}

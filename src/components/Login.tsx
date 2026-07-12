@@ -130,9 +130,13 @@ export const Login: React.FC = () => {
     try {
       await loginWithGoogle();
     } catch (err: any) {
-      console.error("[AuthDebug] handleGoogleLogin caught error:", err);
+      if (import.meta.env.DEV) {
+        console.error("[AuthDebug] handleGoogleLogin caught error:", err);
+      }
       if (err.code === 'auth/popup-closed-by-user') {
-        console.log("Login cancelled by user");
+        if (import.meta.env.DEV) {
+          console.log("Login cancelled by user");
+        }
       } else if (err.code === 'auth/popup-blocked') {
         setError(isEn ? "The browser blocked the popup. Please allow popups and try again." : "ब्राउज़र ने पॉपअप ब्लॉक कर दिया है। कृपया पॉपअप की अनुमति दें और पुनः प्रयास करें।");
       } else {

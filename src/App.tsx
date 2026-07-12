@@ -3,18 +3,27 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { seedInitialData } from './lib/seeder';
 import { Login } from './components/Login';
 import { Layout } from './components/Layout';
 import { Home as HomeScreen } from './components/Home';
-import { AIAssistant } from './components/AIAssistant';
 import { Discover } from './components/Discover';
-import { Profile } from './components/Profile';
 import { NetworkHub } from './components/NetworkHub';
 import { Sprout } from 'lucide-react';
 import { motion } from 'motion/react';
+
+// Lazy loaded heavy components
+const AIAssistant = lazy(() => import('./components/AIAssistant'));
+const Profile = lazy(() => import('./components/Profile'));
+const Opportunities = lazy(() => import('./components/Opportunities'));
+
+const LazyLoadingSpinner = () => (
+  <div className="flex items-center justify-center p-12 w-full">
+    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-krishx-green-600"></div>
+  </div>
+);
 
 const AppContent: React.FC = () => {
   const { user, isInitialLoading } = useAuth();
@@ -90,17 +99,23 @@ const AppContent: React.FC = () => {
           onViewProfile={handleViewProfile} 
         />
       )}
-      {activeTab === 'ai' && <AIAssistant />}
+      {activeTab === 'ai' && (
+        <Suspense fallback={<LazyLoadingSpinner />}>
+          <AIAssistant />
+        </Suspense>
+      )}
       {activeTab === 'discover' && <Discover />}
       {activeTab === 'network' && (
         <NetworkHub onViewProfile={handleViewProfile} />
       )}
       {activeTab === 'profile' && (
-        <Profile 
-          viewedProfileId={viewedProfileId} 
-          setViewedProfileId={setViewedProfileId}
-          setActiveTab={handleSetActiveTab}
-        />
+        <Suspense fallback={<LazyLoadingSpinner />}>
+          <Profile 
+            viewedProfileId={viewedProfileId} 
+            setViewedProfileId={setViewedProfileId}
+            setActiveTab={handleSetActiveTab}
+          />
+        </Suspense>
       )}
     </Layout>
   );

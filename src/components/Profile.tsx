@@ -76,7 +76,7 @@ export const Profile: React.FC<ProfileProps> = ({
   setViewedProfileId, 
   setActiveTab 
 }) => {
-  const { userProfile, updateProfile, language, logout } = useAuth();
+  const { userProfile, updateProfile, language, logout, addNotification } = useAuth();
   const t = getTranslation(language);
   
   // Visited profile states
@@ -349,6 +349,19 @@ export const Profile: React.FC<ProfileProps> = ({
           const connRef = doc(db, 'connections', conn.id);
           await updateDoc(connRef, { status: 'connected' });
           triggerToast("Connection Established!");
+
+          // Add notification for approved request
+          await addNotification({
+            userId: target,
+            senderId: userProfile.uid,
+            senderName: userProfile.name,
+            senderPhoto: userProfile.photoURL || '',
+            type: 'connection',
+            title: language === 'en' ? 'Connection Request Accepted' : 'कनेक्शन अनुरोध स्वीकार किया गया',
+            body: language === 'en'
+              ? `${userProfile.name} accepted your connection request. You are now connected.`
+              : `${userProfile.name} ने आपका कनेक्शन अनुरोध स्वीकार कर लिया है। अब आप जुड़े हुए हैं।`
+          });
         } else {
           triggerToast("Already pending or connected.");
         }
@@ -361,6 +374,19 @@ export const Profile: React.FC<ProfileProps> = ({
         createdAt: new Date().toISOString()
       });
       triggerToast("Connection Request Sent!");
+
+      // Add notification for new request
+      await addNotification({
+        userId: target,
+        senderId: userProfile.uid,
+        senderName: userProfile.name,
+        senderPhoto: userProfile.photoURL || '',
+        type: 'connection',
+        title: language === 'en' ? 'Connection Request' : 'कनेक्शन अनुरोध',
+        body: language === 'en'
+          ? `${userProfile.name} sent you a professional connection request.`
+          : `${userProfile.name} ने आपको एक पेशेवर कनेक्शन अनुरोध भेजा है।`
+      });
     } catch (err) {
       console.error("Error updating connection:", err);
     }

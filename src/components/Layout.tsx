@@ -7,6 +7,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { getTranslation } from '../lib/i18n';
 import { motion, AnimatePresence } from 'motion/react';
+import { NotificationCenter } from './NotificationCenter';
 import { 
   Home, 
   Bot, 
@@ -30,9 +31,10 @@ interface LayoutProps {
 }
 
 export const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTab }) => {
-  const { userProfile, logout, language, switchLanguage } = useAuth();
+  const { userProfile, logout, language, switchLanguage, unreadNotificationsCount } = useAuth();
   const t = getTranslation(language);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
 
   const navigationItems = [
     { id: 'home', label: t.nav.home, icon: Home },
@@ -177,7 +179,27 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTa
         </div>
         <div className="flex items-center gap-2">
           <button className="p-2 text-krishx-dark-700/60 hover:text-krishx-dark-900 transition-colors"><Search className="w-5 h-5" strokeWidth={1.5} /></button>
-          <button className="p-2 text-krishx-dark-700/60 hover:text-krishx-dark-900 transition-colors"><Bell className="w-5 h-5" strokeWidth={1.5} /></button>
+          <div className="relative">
+            <button 
+              onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
+              className="p-2 text-krishx-dark-700/60 hover:text-krishx-dark-900 transition-colors relative"
+            >
+              <Bell className="w-5 h-5" strokeWidth={1.5} />
+              {unreadNotificationsCount > 0 && (
+                <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-krishx-green-600 rounded-full border border-white animate-pulse" />
+              )}
+            </button>
+            
+            <AnimatePresence>
+              {isNotificationsOpen && (
+                <NotificationCenter 
+                  isOpen={isNotificationsOpen} 
+                  onClose={() => setIsNotificationsOpen(false)} 
+                  setActiveTab={setActiveTab}
+                />
+              )}
+            </AnimatePresence>
+          </div>
         </div>
       </header>
 

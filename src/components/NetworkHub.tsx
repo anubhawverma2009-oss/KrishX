@@ -3,13 +3,20 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from 'react';
-import { Communities } from './Communities';
+import React, { useState, lazy, Suspense } from 'react';
 import { ProfessionalDirectory } from './ProfessionalDirectory';
 import { useAuth } from '../context/AuthContext';
 import { getTranslation } from '../lib/i18n';
 import { Users2, UserPlus, Search } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+
+const Communities = lazy(() => import('./Communities'));
+
+const LazyLoadingSpinner = () => (
+  <div className="flex items-center justify-center p-8 w-full">
+    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-krishx-green-600"></div>
+  </div>
+);
 
 interface NetworkHubProps {
   onViewProfile?: (uid: string) => void;
@@ -93,7 +100,9 @@ export const NetworkHub: React.FC<NetworkHubProps> = ({ onViewProfile }) => {
           transition={{ duration: 0.25, ease: [0.23, 1, 0.32, 1] }}
         >
           {activeSubTab === 'communities' && (
-            <Communities searchQuery={searchQuery} />
+            <Suspense fallback={<LazyLoadingSpinner />}>
+              <Communities searchQuery={searchQuery} />
+            </Suspense>
           )}
           {activeSubTab === 'directory' && (
             <ProfessionalDirectory searchQuery={searchQuery} onViewProfile={onViewProfile} />

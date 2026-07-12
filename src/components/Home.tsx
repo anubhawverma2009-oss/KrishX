@@ -5,6 +5,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { NotificationCenter } from './NotificationCenter';
 import { db, auth } from '../lib/firebase';
 import { 
   collection, 
@@ -50,7 +51,10 @@ interface HomeProps {
 }
 
 export const Home: React.FC<HomeProps> = ({ setActiveTab, onViewProfile }) => {
-  const { userProfile, language } = useAuth();
+  const { userProfile, language, unreadNotificationsCount, addNotification } = useAuth();
+  
+  // Notification center toggle state
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   
   // Feed & connection states
   const [posts, setPosts] = useState<Post[]>([]);
@@ -293,6 +297,22 @@ export const Home: React.FC<HomeProps> = ({ setActiveTab, onViewProfile }) => {
       });
       if (!hasAppreciated) {
         triggerToast("Post appreciated!");
+        
+        // Add real-time notification
+        if (post.authorId !== userProfile.uid) {
+          await addNotification({
+            userId: post.authorId,
+            senderId: userProfile.uid,
+            senderName: userProfile.name,
+            senderPhoto: userProfile.photoURL || '',
+            type: 'like',
+            title: language === 'en' ? 'Post Appreciated' : 'पोस्ट की सराहना की गई',
+            body: language === 'en'
+              ? `${userProfile.name} appreciated your post on "${post.category}".`
+              : `${userProfile.name} ने "${post.category}" पर आपकी पोस्ट की सराहना की।`,
+            postId: post.id
+          });
+        }
       }
     } catch (err) {
       console.error(err);
@@ -319,6 +339,23 @@ export const Home: React.FC<HomeProps> = ({ setActiveTab, onViewProfile }) => {
       });
       setCommentInputs(prev => ({ ...prev, [postId]: '' }));
       triggerToast("Comment added!");
+
+      // Add real-time notification
+      const post = posts.find(p => p.id === postId);
+      if (post && post.authorId !== userProfile.uid) {
+        await addNotification({
+          userId: post.authorId,
+          senderId: userProfile.uid,
+          senderName: userProfile.name,
+          senderPhoto: userProfile.photoURL || '',
+          type: 'comment',
+          title: language === 'en' ? 'New Comment' : 'नई टिप्पणी',
+          body: language === 'en'
+            ? `${userProfile.name} commented: "${commentText.substring(0, 40)}..."`
+            : `${userProfile.name} ने टिप्पणी की: "${commentText.substring(0, 40)}..."`,
+          postId: postId
+        });
+      }
     } catch (err) {
       console.error(err);
     }
@@ -345,6 +382,19 @@ export const Home: React.FC<HomeProps> = ({ setActiveTab, onViewProfile }) => {
         createdAt: new Date().toISOString()
       });
       triggerToast("Connection request sent!");
+
+      // Add real-time notification
+      await addNotification({
+        userId: authorId,
+        senderId: userProfile.uid,
+        senderName: userProfile.name,
+        senderPhoto: userProfile.photoURL || '',
+        type: 'connection',
+        title: language === 'en' ? 'Connection Request' : 'कनेक्शन अनुरोध',
+        body: language === 'en'
+          ? `${userProfile.name} sent you a professional connection request.`
+          : `${userProfile.name} ने आपको एक पेशेवर कनेक्शन अनुरोध भेजा है।`
+      });
     } catch (err) {
       console.error(err);
       triggerToast("Failed to connect.");
@@ -459,13 +509,27 @@ export const Home: React.FC<HomeProps> = ({ setActiveTab, onViewProfile }) => {
         </div>
         
         {/* Notification Icon */}
-        <button 
-          onClick={() => triggerToast("You are fully up to date! No new notifications.")}
-          className="relative p-3 bg-white/80 backdrop-blur-sm hover:bg-white border border-krishx-earth-200/50 rounded-2xl transition-all shadow-[0_2px_10px_-2px_rgba(0,0,0,0.05)] group hover:-translate-y-0.5"
-        >
-          <Bell className="w-5 h-5 text-krishx-dark-700/60 group-hover:text-krishx-dark-900 transition-colors" strokeWidth={1.5} />
-          <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-krishx-green-500 rounded-full border-2 border-white" />
-        </button>
+        <div className="relative">
+          <button 
+            onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
+            className="relative p-3 bg-white/80 backdrop-blur-sm hover:bg-white border border-krishx-earth-200/50 rounded-2xl transition-all shadow-[0_2px_10px_-2px_rgba(0,0,0,0.05)] group hover:-translate-y-0.5"
+          >
+            <Bell className="w-5 h-5 text-krishx-dark-700/60 group-hover:text-krishx-dark-900 transition-colors" strokeWidth={1.5} />
+            {unreadNotificationsCount > 0 && (
+              <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-krishx-green-500 rounded-full border-2 border-white animate-pulse" />
+            )}
+          </button>
+          
+          <AnimatePresence>
+            {isNotificationsOpen && (
+              <NotificationCenter 
+                isOpen={isNotificationsOpen} 
+                onClose={() => setIsNotificationsOpen(false)} 
+                setActiveTab={setActiveTab}
+              />
+            )}
+          </AnimatePresence>
+        </div>
       </div>
 
       {/* SECTION 1: CREATE POST */}

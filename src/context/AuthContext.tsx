@@ -14,9 +14,24 @@ import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword
 } from 'firebase/auth';
-import { doc, getDoc, setDoc, isOffline, seedOfflineData, handleFirestoreError, OperationType } from '../lib/firebase';
+import { 
+  doc, 
+  getDoc, 
+  setDoc, 
+  isOffline, 
+  seedOfflineData, 
+  handleFirestoreError, 
+  OperationType,
+  collection,
+  query,
+  where,
+  orderBy,
+  onSnapshot,
+  addDoc,
+  updateDoc
+} from '../lib/firebase';
 import { auth, googleProvider, db } from '../lib/firebase';
-import { UserProfile } from '../types';
+import { UserProfile, AppNotification } from '../types';
 
 // Safely disable detailed AuthDebug logs in production to avoid exposing configuration or spamming console
 if (typeof window !== 'undefined' && (import.meta as any).env?.PROD) {
@@ -49,6 +64,11 @@ interface AuthContextType {
   logout: () => Promise<void>;
   updateProfile: (updatedData: Partial<UserProfile>) => Promise<void>;
   switchLanguage: (lang: 'hi' | 'en') => Promise<void>;
+  notifications: AppNotification[];
+  unreadNotificationsCount: number;
+  markNotificationAsRead: (id: string) => Promise<void>;
+  markAllNotificationsAsRead: () => Promise<void>;
+  addNotification: (notif: Omit<AppNotification, 'id' | 'createdAt' | 'read'>) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -88,6 +108,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [isActionLoading, setIsActionLoading] = useState(false);
   const [language, setLanguage] = useState<'hi' | 'en'>('hi');
+  const [notifications, setNotifications] = useState<AppNotification[]>([]);
+  const [unreadNotificationsCount, setUnreadNotificationsCount] = useState(0);
 
   // Sync user profile from Firestore or create one
   const syncProfile = async (firebaseUser: User) => {
@@ -137,24 +159,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   useEffect(() => {
-    console.log("[AuthDebug] AuthProvider mounted. Initializing state...");
-    console.log("[AuthDebug] Browser network status: ", navigator.onLine ? "ONLINE" : "OFFLINE");
+    if (import.meta.env.DEV) {
+      console.log("[AuthDebug] AuthProvider mounted. Initializing state...");
+      console.log("[AuthDebug] Browser network status: ", navigator.onLine ? "ONLINE" : "OFFLINE");
+    }
     
     const isOfflineMode = localStorage.getItem('krishx_offline_mode') === 'true';
     const savedUser = localStorage.getItem('krishx_mock_user');
     
     if (isOfflineMode && savedUser) {
-      console.log("[AuthDebug] Loading existing session in Offline/Demo mode. Mock User:", savedUser);
+      if (import.meta.env.DEV) {
+        console.log("[AuthDebug] Loading existing session in Offline/Demo mode. Mock User:", savedUser);
+      }
       try {
         const u = JSON.parse(savedUser);
         setUser(u);
         const profile = localStorage.getItem(`krishx_mock_profile_${u.uid}`);
         if (profile) {
           setUserProfile(JSON.parse(profile));
-          console.log("[AuthDebug] Mock profile loaded successfully.");
+          if (import.meta.env.DEV) {
+            console.log("[AuthDebug] Mock profile loaded successfully.");
+          }
         }
       } catch (err) {
-        console.error("[AuthDebug] Failed to parse saved mock user/profile, resetting.", err);
+        if (import.meta.env.DEV) {
+          console.error("[AuthDebug] Failed to parse saved mock user/profile, resetting.", err);
+        }
         localStorage.removeItem('krishx_offline_mode');
         localStorage.removeItem('krishx_mock_user');
       }
@@ -162,36 +192,54 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return;
     } else {
       if (isOfflineMode) {
-        console.log("[AuthDebug] Offline mode flag was set but no mock user found. Resetting.");
+        if (import.meta.env.DEV) {
+          console.log("[AuthDebug] Offline mode flag was set but no mock user found. Resetting.");
+        }
         localStorage.removeItem('krishx_offline_mode');
       }
     }
 
     // Process redirect sign-in results if arriving from a redirect flow
-    console.log("[AuthDebug] Checking for redirect result from Firebase Auth...");
+    if (import.meta.env.DEV) {
+      console.log("[AuthDebug] Checking for redirect result from Firebase Auth...");
+    }
     getRedirectResult(auth)
       .then(async (result) => {
         if (result?.user) {
-          console.log("[AuthDebug] getRedirectResult successful! User UID:", result.user.uid, "Email:", result.user.email);
+          if (import.meta.env.DEV) {
+            console.log("[AuthDebug] getRedirectResult successful! User UID:", result.user.uid, "Email:", result.user.email);
+          }
           setUser(result.user);
           await syncProfile(result.user);
         }
       })
       .catch((err) => {
-        console.error("[AuthDebug] Error resolving getRedirectResult:", err);
+        if (import.meta.env.DEV) {
+          console.error("[AuthDebug] Error resolving getRedirectResult:", err);
+        }
       });
 
-    console.log("[AuthDebug] Subscribing to real Firebase onAuthStateChanged...");
+    if (import.meta.env.DEV) {
+      console.log("[AuthDebug] Subscribing to real Firebase onAuthStateChanged...");
+    }
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      console.log("[AuthDebug] onAuthStateChanged callback fired. User:", firebaseUser ? firebaseUser.email : "null");
+      if (import.meta.env.DEV) {
+        console.log("[AuthDebug] onAuthStateChanged callback fired. User:", firebaseUser ? firebaseUser.email : "null");
+      }
       setUser(firebaseUser);
       if (firebaseUser) {
         try {
-          console.log("[AuthDebug] User is logged in. Syncing profile from Firestore...");
+          if (import.meta.env.DEV) {
+            console.log("[AuthDebug] User is logged in. Syncing profile from Firestore...");
+          }
           await syncProfile(firebaseUser);
-          console.log("[AuthDebug] Profile sync complete.");
+          if (import.meta.env.DEV) {
+            console.log("[AuthDebug] Profile sync complete.");
+          }
         } catch (err) {
-          console.error("[AuthDebug] Profile sync failed on auth change:", err);
+          if (import.meta.env.DEV) {
+            console.error("[AuthDebug] Profile sync failed on auth change:", err);
+          }
         }
       } else {
         setUserProfile(null);
@@ -204,15 +252,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const loginWithGoogle = async () => {
     setIsActionLoading(true);
-    console.log("[AuthDebug] loginWithGoogle initiated.");
-    console.log("[AuthDebug] Firebase config checks:");
-    console.log("[AuthDebug]   - Project ID:", auth.app.options.projectId);
-    console.log("[AuthDebug]   - Auth Domain:", auth.app.options.authDomain);
-    console.log("[AuthDebug]   - API Key present:", !!auth.app.options.apiKey);
+    if (import.meta.env.DEV) {
+      console.log("[AuthDebug] loginWithGoogle initiated.");
+      console.log("[AuthDebug] Firebase config checks:");
+      console.log("[AuthDebug]   - Project ID:", auth.app.options.projectId);
+      console.log("[AuthDebug]   - Auth Domain:", auth.app.options.authDomain);
+      console.log("[AuthDebug]   - API Key present:", !!auth.app.options.apiKey);
+    }
     
     // Explicitly clear offline mode to ensure a fresh, real Firebase Google Auth attempt
     if (localStorage.getItem('krishx_offline_mode') === 'true') {
-      console.log("[AuthDebug] Clearing lingering offline mode flag before starting Google Sign-In.");
+      if (import.meta.env.DEV) {
+        console.log("[AuthDebug] Clearing lingering offline mode flag before starting Google Sign-In.");
+      }
       localStorage.removeItem('krishx_offline_mode');
       localStorage.removeItem('krishx_mock_user');
     }
@@ -224,27 +276,39 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       document.referrer.includes("run.app") ||
       !window.opener
     );
-    console.log("[AuthDebug] Environment detection: isIframe =", isIframe);
+    if (import.meta.env.DEV) {
+      console.log("[AuthDebug] Environment detection: isIframe =", isIframe);
+    }
 
     try {
-      console.log("[AuthDebug] Calling signOut() to clear stale sessions...");
+      if (import.meta.env.DEV) {
+        console.log("[AuthDebug] Calling signOut() to clear stale sessions...");
+      }
       await auth.signOut();
       
       // If we are in an iframe, popup flows are heavily restricted or blocked, so we must use signInWithRedirect
       if (isIframe) {
-        console.log("[AuthDebug] Running inside restricted/iframe environment. Automatically using signInWithRedirect() instead of signInWithPopup() to ensure compatibility.");
+        if (import.meta.env.DEV) {
+          console.log("[AuthDebug] Running inside restricted/iframe environment. Automatically using signInWithRedirect() instead of signInWithPopup() to ensure compatibility.");
+        }
         await signInWithRedirect(auth, googleProvider);
         return;
       }
 
       try {
-        console.log("[AuthDebug] Attempting signInWithPopup(auth, googleProvider)...");
+        if (import.meta.env.DEV) {
+          console.log("[AuthDebug] Attempting signInWithPopup(auth, googleProvider)...");
+        }
         const result = await signInWithPopup(auth, googleProvider);
-        console.log("[AuthDebug] signInWithPopup completed successfully! User UID:", result.user.uid, "Email:", result.user.email);
+        if (import.meta.env.DEV) {
+          console.log("[AuthDebug] signInWithPopup completed successfully! User UID:", result.user.uid, "Email:", result.user.email);
+        }
       } catch (popupErr: any) {
-        console.warn("[AuthDebug] signInWithPopup failed. Checking if we should fall back to signInWithRedirect...");
-        console.warn("[AuthDebug]   - Error Code:", popupErr.code);
-        console.warn("[AuthDebug]   - Error Message:", popupErr.message);
+        if (import.meta.env.DEV) {
+          console.warn("[AuthDebug] signInWithPopup failed. Checking if we should fall back to signInWithRedirect...");
+          console.warn("[AuthDebug]   - Error Code:", popupErr.code);
+          console.warn("[AuthDebug]   - Error Message:", popupErr.message);
+        }
 
         const isPopupBlockedOrClosed = [
           'auth/popup-closed-by-user',
@@ -254,17 +318,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         ].includes(popupErr.code) || popupErr.message?.toLowerCase().includes('popup');
 
         if (isPopupBlockedOrClosed) {
-          console.log("[AuthDebug] Popup blocked, closed, or unsupported. Automatically falling back to signInWithRedirect()...");
+          if (import.meta.env.DEV) {
+            console.log("[AuthDebug] Popup blocked, closed, or unsupported. Automatically falling back to signInWithRedirect()...");
+          }
           await signInWithRedirect(auth, googleProvider);
         } else {
           throw popupErr;
         }
       }
     } catch (err: any) {
-      console.error("[AuthDebug] Google Auth Error during flow:");
-      console.error("[AuthDebug]   - Error Code:", err.code);
-      console.error("[AuthDebug]   - Error Message:", err.message);
-      console.error("[AuthDebug]   - Full Error Object:", JSON.stringify(err, Object.getOwnPropertyNames(err)));
+      if (import.meta.env.DEV) {
+        console.error("[AuthDebug] Google Auth Error during flow:");
+        console.error("[AuthDebug]   - Error Code:", err.code);
+        console.error("[AuthDebug]   - Error Message:", err.message);
+        console.error("[AuthDebug]   - Full Error Object:", JSON.stringify(err, Object.getOwnPropertyNames(err)));
+      }
       throw err;
     } finally {
       setIsActionLoading(false);
@@ -274,7 +342,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Legendary Demo User login to bypass iframe oauth restrictions during review / hackathon demo
   const loginAsDemoUser = async (demoType: 'farmer' | 'expert' | 'student') => {
     setIsActionLoading(true);
-    console.log(`[AuthDebug] loginAsDemoUser called for demo type: ${demoType}`);
+    if (import.meta.env.DEV) {
+      console.log(`[AuthDebug] loginAsDemoUser called for demo type: ${demoType}`);
+    }
     try {
       // Predefined secure auth credentials for offline/demo simulation in Firebase or manual handling
       let email = "";
@@ -336,10 +406,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Try login first, if doesn't exist, create user
       try {
         let firebaseUser: User;
-        console.log(`[AuthDebug] Attempting real Firebase Auth signInWithEmailAndPassword for: ${email}`);
+        if (import.meta.env.DEV) {
+          console.log(`[AuthDebug] Attempting real Firebase Auth signInWithEmailAndPassword for: ${email}`);
+        }
         const res = await signInWithEmailAndPassword(auth, email, password);
         firebaseUser = res.user;
-        console.log(`[AuthDebug] Real Firebase Auth sign-in successful. Syncing profile...`);
+        if (import.meta.env.DEV) {
+          console.log(`[AuthDebug] Real Firebase Auth sign-in successful. Syncing profile...`);
+        }
 
         // Sync custom default demo values to firestore to make it super rich
         const userRef = doc(db, 'users', firebaseUser.uid);
@@ -369,14 +443,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUserProfile(mergedProfile);
         setUser(firebaseUser);
       } catch (e: any) {
-        console.warn("[AuthDebug] Real Firebase Auth sign-in failed with error code:", e.code, "message:", e.message);
+        if (import.meta.env.DEV) {
+          console.warn("[AuthDebug] Real Firebase Auth sign-in failed with error code:", e.code, "message:", e.message);
+        }
         
         const isNetworkOffline = !navigator.onLine || e.code === 'auth/network-request-failed' || e.message?.includes('network');
         
         if (isNetworkOffline) {
-          console.warn("[AuthDebug] Firebase is actually unavailable (Network is offline). Switching to Offline Demo Mode.");
+          if (import.meta.env.DEV) {
+            console.warn("[AuthDebug] Firebase is actually unavailable (Network is offline). Switching to Offline Demo Mode.");
+          }
         } else {
-          console.warn(`[AuthDebug] Firebase is available, but Email/Password provider returned error "${e.code}" (likely disabled in Firebase Console). Falling back to Local Mock Demo Mode for this session so you can explore the app.`);
+          if (import.meta.env.DEV) {
+            console.warn(`[AuthDebug] Firebase is available, but Email/Password provider returned error "${e.code}" (likely disabled in Firebase Console). Falling back to Local Mock Demo Mode for this session so you can explore the app.`);
+          }
         }
 
         localStorage.setItem('krishx_offline_mode', 'true');
@@ -422,7 +502,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
     } catch (err) {
-      console.error("[AuthDebug] Demo login flow error:", err);
+      if (import.meta.env.DEV) {
+        console.error("[AuthDebug] Demo login flow error:", err);
+      }
       throw err;
     } finally {
       setIsActionLoading(false);
@@ -494,6 +576,130 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  // Notifications Real-Time Subscription & Seeding
+  useEffect(() => {
+    if (!user) {
+      setNotifications([]);
+      setUnreadNotificationsCount(0);
+      return;
+    }
+
+    const notifCol = collection(db, 'notifications');
+    const qNotif = query(
+      notifCol,
+      where('userId', '==', user.uid),
+      orderBy('createdAt', 'desc')
+    );
+
+    const unsubscribe = onSnapshot(qNotif, async (snapshot) => {
+      let loadedNotifs = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as AppNotification[];
+
+      // If empty, seed initial realistic notifications
+      if (loadedNotifs.length === 0) {
+        const isEn = language === 'en';
+        const initialNotifs: Omit<AppNotification, 'id'>[] = [
+          {
+            userId: user.uid,
+            type: 'alert',
+            title: isEn ? "Optimal Sowing Window Open" : "इष्टतम बुवाई का समय खुला है",
+            body: isEn 
+              ? "Optimal soil moisture and temperature levels detected for Millet and Paddy in your region." 
+              : "आपके क्षेत्र में बाजरा और धान के लिए इष्टतम मिट्टी की नमी और तापमान स्तर देखा गया है।",
+            createdAt: new Date(Date.now() - 30 * 60 * 1000).toISOString(), // 30m ago
+            read: false
+          },
+          {
+            userId: user.uid,
+            type: 'like',
+            senderName: "Rajesh Patel",
+            senderPhoto: "https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=100",
+            title: isEn ? "Post Appreciated" : "पोस्ट की सराहना की गई",
+            body: isEn 
+              ? "Rajesh Patel liked your post on organic compost preparation." 
+              : "राजेश पटेल ने जैविक खाद तैयार करने की आपकी पोस्ट को पसंद किया।",
+            createdAt: new Date(Date.now() - 3 * 3600 * 1000).toISOString(), // 3h ago
+            read: false
+          },
+          {
+            userId: user.uid,
+            type: 'connection',
+            senderName: "Dr. Swati Sharma",
+            senderPhoto: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=100",
+            title: isEn ? "Connection Approved" : "कनेक्शन स्वीकृत",
+            body: isEn 
+              ? "Dr. Swati Sharma (Agri-Scientist) accepted your professional connection request." 
+              : "डॉ. स्वाति शर्मा (कृषि वैज्ञानिक) ने आपके पेशेवर कनेक्शन अनुरोध को स्वीकार कर लिया है।",
+            createdAt: new Date(Date.now() - 24 * 3600 * 1000).toISOString(), // 1d ago
+            read: true
+          },
+          {
+            userId: user.uid,
+            type: 'system',
+            title: isEn ? "Mandi Price Alert" : "मंडी मूल्य चेतावनी",
+            body: isEn 
+              ? "Wheat prices in nearest Meerut Mandi have increased by ₹50/quintal. Tap to analyze." 
+              : "निकटतम मेरठ मंडी में गेहूं की कीमतों में ₹50/क्विंटल की वृद्धि हुई है। विश्लेषण के लिए टैप करें।",
+            createdAt: new Date(Date.now() - 2 * 24 * 3600 * 1000).toISOString(), // 2d ago
+            read: true
+          }
+        ];
+
+        try {
+          for (const notif of initialNotifs) {
+            await addDoc(notifCol, notif);
+          }
+        } catch (e) {
+          console.error("Error seeding initial notifications:", e);
+        }
+        return;
+      }
+
+      setNotifications(loadedNotifs);
+      setUnreadNotificationsCount(loadedNotifs.filter(n => !n.read).length);
+    }, (err) => {
+      console.error("Error loading notifications:", err);
+    });
+
+    return unsubscribe;
+  }, [user, language]);
+
+  const markNotificationAsRead = async (id: string) => {
+    try {
+      const notifRef = doc(db, 'notifications', id);
+      await updateDoc(notifRef, { read: true });
+    } catch (err) {
+      console.error("Error marking notification as read:", err);
+    }
+  };
+
+  const markAllNotificationsAsRead = async () => {
+    try {
+      const unread = notifications.filter(n => !n.read);
+      for (const n of unread) {
+        const notifRef = doc(db, 'notifications', n.id);
+        await updateDoc(notifRef, { read: true });
+      }
+    } catch (err) {
+      console.error("Error marking all notifications as read:", err);
+    }
+  };
+
+  const addNotification = async (notif: Omit<AppNotification, 'id' | 'createdAt' | 'read'>) => {
+    try {
+      const notifCol = collection(db, 'notifications');
+      await addDoc(notifCol, {
+        ...notif,
+        createdAt: new Date().toISOString(),
+        read: false
+      });
+    } catch (err) {
+      console.error("Error adding notification:", err);
+    }
+  };
+
   return (
     <AuthContext.Provider value={{ 
       user, 
@@ -505,7 +711,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       loginAsDemoUser,
       logout, 
       updateProfile,
-      switchLanguage
+      switchLanguage,
+      notifications,
+      unreadNotificationsCount,
+      markNotificationAsRead,
+      markAllNotificationsAsRead,
+      addNotification
     }}>
       {children}
     </AuthContext.Provider>
