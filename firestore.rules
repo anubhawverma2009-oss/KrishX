@@ -1,0 +1,57 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // -------------------------------------------------------------------------
+    // 1. GLOBAL HELPERS (Primitives)
+    // -------------------------------------------------------------------------
+    function isSignedIn() { return request.auth != null; }
+    function isOwner(userId) { return isSignedIn() && request.auth.uid == userId; }
+
+    // -------------------------------------------------------------------------
+    // 2. COLLECTION RULES
+    // -------------------------------------------------------------------------
+
+    // Default deny (recommended best practice)
+    // match /{document=**} {
+    //   allow read, write: if false;
+    // }
+
+    // User Profile Rules
+    match /users/{userId} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn();
+    }
+    
+    // Posts collection
+    match /posts/{postId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && (
+        resource.data.authorId == request.auth.uid ||
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likes', 'comments'])
+      );
+      allow delete: if isSignedIn() && resource.data.authorId == request.auth.uid;
+    }
+    
+    // Communities collection
+    match /communities/{communityId} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn(); // Seeder needs write access
+    }
+    
+    // Opportunities collection
+    match /opportunities/{oppId} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn(); // Seeder needs write access
+    }
+
+    // Connections collection
+    match /connections/{connectionId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && request.resource.data.fromId == request.auth.uid;
+      allow update: if isSignedIn() && (resource.data.fromId == request.auth.uid || resource.data.toId == request.auth.uid);
+      allow delete: if isSignedIn() && (resource.data.fromId == request.auth.uid || resource.data.toId == request.auth.uid);
+    }
+  }
+}

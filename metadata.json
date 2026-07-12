@@ -1,0 +1,6 @@
+{
+  "name": "KrishX",
+  "description": "India's first AI-powered Professional Agriculture Network where farmers, students, and experts build their professional identity, share agricultural knowledge, and discover opportunities.",
+  "requestFramePermissions": ["camera", "microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

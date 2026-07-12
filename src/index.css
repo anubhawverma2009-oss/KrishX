@@ -1,0 +1,78 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  
+  --color-krishx-green-50: #F0FDF4;
+  --color-krishx-green-100: #DCFCE7;
+  --color-krishx-green-200: #BBF7D0;
+  --color-krishx-green-300: #86EFAC;
+  --color-krishx-green-400: #4ADE80;
+  --color-krishx-green-500: #22C55E;
+  --color-krishx-green-600: #16A34A;
+  --color-krishx-green-700: #15803D;
+  --color-krishx-green-800: #166534;
+  --color-krishx-green-900: #14532D;
+
+  --color-krishx-earth-50: #FDFCF7;
+  --color-krishx-earth-100: #F7F5EB;
+  --color-krishx-earth-200: #EBE5D3;
+  --color-krishx-earth-300: #DDD3BA;
+
+  --color-krishx-dark-900: #0F172A;
+  --color-krishx-dark-800: #1E293B;
+  --color-krishx-dark-700: #334155;
+  
+  --shadow-premium-soft: 0 10px 40px -10px rgba(0,0,0,0.08);
+  --shadow-premium-hover: 0 20px 40px -10px rgba(0,0,0,0.12);
+  --shadow-card: 0 4px 20px -2px rgba(0,0,0,0.05);
+}
+
+@layer base {
+  body {
+    background-color: var(--color-krishx-earth-50);
+    color: var(--color-krishx-dark-800);
+    /* Subtle organic texture pattern overlay could be done via pseudo-element */
+  }
+}
+
+.bg-premium-gradient {
+  background: linear-gradient(135deg, var(--color-krishx-earth-50) 0%, var(--color-krishx-green-50) 100%);
+}
+
+@keyframes blob {
+  0% { transform: translate(0px, 0px) scale(1); }
+  33% { transform: translate(30px, -50px) scale(1.1); }
+  66% { transform: translate(-20px, 20px) scale(0.9); }
+  100% { transform: translate(0px, 0px) scale(1); }
+}
+
+.animate-blob {
+  animation: blob 20s infinite alternate;
+}
+
+.animation-delay-2000 {
+  animation-delay: 2s;
+}
+
+.animation-delay-4000 {
+  animation-delay: 4s;
+}
+
+.premium-card {
+  @apply bg-white/70 backdrop-blur-md border border-krishx-earth-200/40 rounded-[2rem] shadow-[0_12px_40px_-15px_rgba(0,0,0,0.04)] transition-all duration-300 hover:shadow-[0_20px_45px_-10px_rgba(0,0,0,0.06)] hover:-translate-y-0.5 hover:border-krishx-green-200/45;
+}
+
+.premium-btn {
+  @apply bg-krishx-green-600 text-white font-medium rounded-full px-6 py-2.5 transition-all duration-300 hover:bg-krishx-green-700 hover:shadow-lg active:scale-95;
+}
+
+.premium-input {
+  @apply bg-krishx-earth-50 border border-krishx-earth-200 rounded-2xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-krishx-green-500/20 focus:border-krishx-green-500 transition-all duration-300;
+}
+
+.text-display {
+  @apply font-display tracking-tight text-krishx-dark-900;
+}
