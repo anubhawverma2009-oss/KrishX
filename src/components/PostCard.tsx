@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { MoreVertical, Edit, Trash2, Check, Clock, UserPlus, MapPin, Heart, MessageSquare, Bookmark, Share2 } from 'lucide-react';
 import { Post, UserProfile, Comment } from '../types';
 import { db, doc, updateDoc, arrayUnion, arrayRemove } from '../lib/firebase';
+import { safeString, safeDateString } from '../lib/utils';
 
 // Subtle high-quality client-side translation helper for agrarian content
 const translatePostContent = (text: string, toLanguage: 'hi' | 'en'): string => {
@@ -144,7 +145,7 @@ interface PostCardProps {
   triggerToast: (msg: string) => void;
 }
 
-export const PostCard: React.FC<PostCardProps> = ({
+export const PostCard: React.FC<PostCardProps> = React.memo(({
   post,
   userProfile,
   connections,
@@ -164,6 +165,7 @@ export const PostCard: React.FC<PostCardProps> = ({
 
   const isAuthorMe = userProfile?.uid === post.authorId;
   const hasAppreciated = userProfile ? post.likes?.includes(userProfile.uid) : false;
+  const isSaved = (savedPosts || []).includes(post.id) || (userProfile?.savedPosts || []).includes(post.id);
   
   const connection = connections.find(c => 
     userProfile && (
@@ -247,8 +249,8 @@ export const PostCard: React.FC<PostCardProps> = ({
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center gap-3">
             <img 
-              src={post.authorPhotoURL || 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=100'} 
-              alt={post.authorName} 
+              src={safeString(post.authorPhotoURL) || 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=100'} 
+              alt={safeString(post.authorName)} 
               onClick={() => onProfileClick(post.authorId)}
               className="w-12 h-12 rounded-2xl object-cover ring-2 ring-krishx-earth-50 cursor-pointer hover:opacity-90 transition-opacity"
             />
@@ -258,25 +260,29 @@ export const PostCard: React.FC<PostCardProps> = ({
                   onClick={() => onProfileClick(post.authorId)}
                   className="text-sm font-black text-krishx-dark-900 tracking-tight cursor-pointer hover:text-krishx-green-700 transition-colors"
                 >
-                  {post.authorName}
+                  {safeString(post.authorName)}
                 </span>
                 
                 {/* Category Tag */}
                 <span className="bg-krishx-earth-50 text-krishx-green-700 px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-wider">
-                  {post.category}
+                  {safeString(post.category)}
                 </span>
               </div>
               
               {/* Subheader: Role, Location, Time */}
               <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px] font-bold text-krishx-dark-800/40 uppercase tracking-tight mt-0.5">
-                <span>{post.authorRole}</span>
+                <span>{safeString(post.authorRole)}</span>
+                {safeString(post.authorLocation) && (
+                  <>
+                    <div className="w-1 h-1 rounded-full bg-krishx-earth-300" />
+                    <span className="flex items-center gap-0.5">
+                      <MapPin className="w-2.5 h-2.5" /> {safeString(post.authorLocation)}
+                    </span>
+                  </>
+                )}
                 <div className="w-1 h-1 rounded-full bg-krishx-earth-300" />
                 <span className="flex items-center gap-0.5">
-                  <MapPin className="w-2.5 h-2.5" /> {post.authorLocation}
-                </span>
-                <div className="w-1 h-1 rounded-full bg-krishx-earth-300" />
-                <span className="flex items-center gap-0.5">
-                  <Clock className="w-2.5 h-2.5" /> {new Date(post.createdAt).toLocaleDateString()}
+                  <Clock className="w-2.5 h-2.5" /> {safeDateString(post.createdAt, 'Recent')}
                 </span>
               </div>
             </div>
@@ -373,7 +379,7 @@ export const PostCard: React.FC<PostCardProps> = ({
         </div>
 
         {/* Post Content */}
-        <p className="text-[15px] md:text-[16px] text-krishx-dark-900 leading-relaxed tracking-wide font-medium mb-3 whitespace-pre-wrap">
+        <p className="text-[15px] md:text-[16px] text-krishx-dark-900 leading-relaxed tracking-wide font-medium mb-3 whitespace-pre-wrap break-words">
           {showTranslation 
             ? translatePostContent(post.content, /[\u0900-\u097F]/.test(post.content) ? 'en' : 'hi') 
             : post.content}
@@ -496,13 +502,13 @@ export const PostCard: React.FC<PostCardProps> = ({
             <button 
               onClick={() => onToggleSave(post.id)}
               className={`p-2 rounded-xl transition-all ${
-                savedPosts.includes(post.id) 
-                  ? 'text-krishx-green-700 bg-krishx-earth-50' 
-                  : 'text-krishx-dark-800/40 hover:bg-krishx-earth-50 hover:text-krishx-dark-900'
+                isSaved 
+                  ? 'text-emerald-700 bg-emerald-50 border border-emerald-200/60' 
+                  : 'text-stone-400 hover:bg-stone-50 hover:text-stone-700'
               }`}
-              title="Save Post"
+              title={isSaved ? "Remove Bookmark" : "Save Post"}
             >
-              <Bookmark className={`w-4 h-4 ${savedPosts.includes(post.id) ? 'fill-krishx-green-700' : ''}`} />
+              <Bookmark className={`w-4 h-4 ${isSaved ? 'fill-emerald-700 text-emerald-700' : ''}`} />
             </button>
 
             {/* Share */}
@@ -544,13 +550,13 @@ export const PostCard: React.FC<PostCardProps> = ({
                             onClick={() => onProfileClick(comment.authorId)}
                             className="text-xs font-black text-krishx-dark-900 cursor-pointer hover:text-krishx-green-700"
                           >
-                            {comment.authorName}
+                            {safeString(comment.authorName, 'Farmer')}
                           </span>
                           <span className="text-[9px] font-bold text-krishx-dark-800/30 uppercase">
-                            {new Date(comment.createdAt).toLocaleDateString()}
+                            {safeDateString(comment.createdAt, 'Recent')}
                           </span>
                         </div>
-                        <p className="text-xs font-medium text-krishx-dark-900/80 mt-1">{comment.content}</p>
+                        <p className="text-xs font-medium text-krishx-dark-900/80 mt-1">{safeString(comment.content)}</p>
                       </div>
                     </div>
                   ))}
@@ -582,4 +588,4 @@ export const PostCard: React.FC<PostCardProps> = ({
       </div>
     </motion.div>
   );
-};
+});

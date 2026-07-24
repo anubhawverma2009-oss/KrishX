@@ -3,21 +3,50 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+export interface ExperienceItem {
+  id: string;
+  role: string;
+  farmOrOrg: string;
+  location?: string;
+  period: string;
+  description?: string;
+}
+
+export interface AchievementItem {
+  id: string;
+  title: string;
+  organization: string;
+  year: string;
+  type: 'award' | 'training' | 'recognition' | 'badge';
+  description?: string;
+}
+
 export interface UserProfile {
   uid: string;
   krishXId: string; // Unique KX-XX-XXXXXX
   name: string;
   email: string;
   photoURL?: string;
+  coverImage?: string;
+  role?: string; // e.g., "Progressive Farmer • Wheat & Mustard"
+  bio?: string; // short bio
   location: string; // e.g., "Meerut, Uttar Pradesh"
   crops: string[]; // e.g., ["Wheat", "Sugarcane"]
+  currentCrops?: string[]; // Alias/extended crops
+  farmingPractices?: string[]; // e.g., ["Organic Farming", "Drip Irrigation"]
+  expertise?: string[]; // e.g., ["Soil Health", "Crop Management"]
+  interests?: string[]; // e.g., ["AgriTech", "Zero Budget Farming"]
+  languages?: string[]; // e.g., ["Hindi", "English", "Punjabi"]
   experienceYears: number;
   education: string; // e.g., "B.Sc Agriculture"
   skills: string[]; // e.g., ["Organic Farming", "Drip Irrigation"]
-  achievements: string[]; // e.g., "Best Sugarcane Yield 2025"
+  achievements: string[]; // legacy list of achievement strings
+  structuredAchievements?: AchievementItem[];
+  experiences?: ExperienceItem[];
   summary: string; // Professional summary
   krishScore: number; // calculated score
   badges: string[]; // earned badges e.g., ["pioneer", "helper", "expert"]
+  isVerified?: boolean;
   language: 'hi' | 'en';
   onboardingComplete: boolean;
   createdAt: string;

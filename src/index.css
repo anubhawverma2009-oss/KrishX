@@ -76,3 +76,23 @@
 .text-display {
   @apply font-display tracking-tight text-krishx-dark-900;
 }
+
+.kx-heading-hero {
+  @apply font-display tracking-tight font-bold text-2xl md:text-3xl text-krishx-dark-900;
+}
+
+.kx-heading-section {
+  @apply font-display tracking-tight font-bold text-lg md:text-xl text-krishx-dark-900;
+}
+
+.kx-heading-card {
+  @apply font-sans font-bold text-base text-krishx-dark-900;
+}
+
+.kx-body {
+  @apply font-sans text-sm md:text-base font-normal text-krishx-dark-800 leading-relaxed;
+}
+
+.kx-label {
+  @apply font-sans text-[11px] font-bold uppercase tracking-wider text-krishx-dark-700/60;
+}

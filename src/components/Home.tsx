@@ -51,7 +51,7 @@ interface HomeProps {
 }
 
 export const Home: React.FC<HomeProps> = ({ setActiveTab, onViewProfile }) => {
-  const { userProfile, language, unreadNotificationsCount, addNotification } = useAuth();
+  const { userProfile, toggleSavePost: toggleSavePostContext, language, unreadNotificationsCount, addNotification } = useAuth();
   
   // Notification center toggle state
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
@@ -438,18 +438,16 @@ export const Home: React.FC<HomeProps> = ({ setActiveTab, onViewProfile }) => {
 
   const toggleSavePost = async (postId: string) => {
     if (!userProfile) return;
-    const isSaved = (userProfile.savedPosts || []).includes(postId);
-    const userRef = doc(db, 'users', userProfile.uid);
     try {
-      if (isSaved) {
-        await updateDoc(userRef, { savedPosts: arrayRemove(postId) });
-        triggerToast("Post removed from saved.");
-      } else {
-        await updateDoc(userRef, { savedPosts: arrayUnion(postId) });
+      const nowSaved = await toggleSavePostContext(postId);
+      if (nowSaved) {
         triggerToast("Post saved successfully!");
+      } else {
+        triggerToast("Post removed from saved.");
       }
     } catch (e) {
-      console.error(e);
+      console.error("Error saving post:", e);
+      triggerToast("Failed to update saved post.");
     }
   };
 
@@ -903,7 +901,7 @@ export const Home: React.FC<HomeProps> = ({ setActiveTab, onViewProfile }) => {
                   </div>
 
                   {/* Post Content */}
-                  <p className="text-[15px] md:text-[16px] text-krishx-dark-900 leading-relaxed tracking-wide font-medium mb-4 whitespace-pre-wrap">
+                  <p className="text-[15px] md:text-[16px] text-krishx-dark-900 leading-relaxed tracking-wide font-medium mb-4 whitespace-pre-wrap break-words">
                     {post.content}
                   </p>
 
@@ -1009,12 +1007,12 @@ export const Home: React.FC<HomeProps> = ({ setActiveTab, onViewProfile }) => {
                         onClick={() => toggleSavePost(post.id)}
                         className={`p-2 rounded-xl transition-all ${
                           (userProfile?.savedPosts || []).includes(post.id) 
-                            ? 'text-krishx-green-700 bg-krishx-earth-50' 
-                            : 'text-krishx-dark-800/40 hover:bg-krishx-earth-50 hover:text-krishx-dark-900'
+                            ? 'text-emerald-700 bg-emerald-50 border border-emerald-200/60' 
+                            : 'text-stone-400 hover:bg-stone-50 hover:text-stone-700'
                         }`}
-                        title="Save Post"
+                        title={(userProfile?.savedPosts || []).includes(post.id) ? "Remove Bookmark" : "Save Post"}
                       >
-                        <Bookmark className={`w-4 h-4 ${(userProfile?.savedPosts || []).includes(post.id) ? 'fill-krishx-green-700' : ''}`} />
+                        <Bookmark className={`w-4 h-4 ${(userProfile?.savedPosts || []).includes(post.id) ? 'fill-emerald-700 text-emerald-700' : ''}`} />
                       </button>
 
                       {/* Share */}

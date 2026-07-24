@@ -160,7 +160,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 15, scale: 0.95 }}
           transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
-          className="absolute top-20 right-4 md:right-12 w-80 md:w-[420px] bg-white border border-krishx-earth-200/60 rounded-[28px] shadow-2xl p-4 pointer-events-auto max-h-[80vh] flex flex-col z-[100]"
+          className="absolute top-20 right-4 md:right-12 w-[calc(100vw-2rem)] sm:w-80 md:w-[420px] bg-white border border-krishx-earth-200/60 rounded-[28px] shadow-2xl p-4 pointer-events-auto max-h-[80vh] flex flex-col z-[100]"
           id="notification-dropdown-panel"
         >
           {/* Header */}

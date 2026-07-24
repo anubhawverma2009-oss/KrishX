@@ -28,7 +28,9 @@ import {
   orderBy,
   onSnapshot,
   addDoc,
-  updateDoc
+  updateDoc,
+  arrayUnion,
+  arrayRemove
 } from '../lib/firebase';
 import { auth, googleProvider, db } from '../lib/firebase';
 import { UserProfile, AppNotification } from '../types';
@@ -63,6 +65,7 @@ interface AuthContextType {
   loginAsDemoUser: (demoType: 'farmer' | 'expert' | 'student') => Promise<void>;
   logout: () => Promise<void>;
   updateProfile: (updatedData: Partial<UserProfile>) => Promise<void>;
+  toggleSavePost: (postId: string) => Promise<boolean>;
   switchLanguage: (lang: 'hi' | 'en') => Promise<void>;
   notifications: AppNotification[];
   unreadNotificationsCount: number;
@@ -561,6 +564,57 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  // Real-time listener for user profile updates from Firestore
+  useEffect(() => {
+    if (!user) return;
+    const userRef = doc(db, 'users', user.uid);
+    const unsub = onSnapshot(userRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.data() as UserProfile;
+        setUserProfile(data);
+      }
+    }, (err) => {
+      console.error("Error subscribing to user profile:", err);
+    });
+    return () => unsub();
+  }, [user?.uid]);
+
+  const toggleSavePost = async (postId: string): Promise<boolean> => {
+    if (!user || !userProfile) {
+      throw new Error("User must be logged in to save posts.");
+    }
+
+    const currentSaved = userProfile.savedPosts || [];
+    const isSaved = currentSaved.includes(postId);
+    const updatedSaved = isSaved
+      ? currentSaved.filter(id => id !== postId)
+      : [...currentSaved, postId];
+
+    // Optimistic UI update
+    const previousProfile = { ...userProfile };
+    const optimisticProfile = { ...userProfile, savedPosts: updatedSaved };
+    setUserProfile(optimisticProfile);
+
+    if (localStorage.getItem('krishx_offline_mode') === 'true' || user.uid.startsWith('demo_')) {
+      localStorage.setItem(`krishx_mock_profile_${user.uid}`, JSON.stringify(optimisticProfile));
+    }
+
+    try {
+      const userRef = doc(db, 'users', user.uid);
+      if (isSaved) {
+        await updateDoc(userRef, { savedPosts: arrayRemove(postId) });
+      } else {
+        await updateDoc(userRef, { savedPosts: arrayUnion(postId) });
+      }
+      return !isSaved; // returns true if now saved, false if unsaved
+    } catch (err) {
+      // Revert optimistic state on failure
+      setUserProfile(previousProfile);
+      handleFirestoreError(err, OperationType.UPDATE, `users/${user.uid}`);
+      throw err;
+    }
+  };
+
   const switchLanguage = async (newLang: 'hi' | 'en') => {
     setLanguage(newLang);
     if (user) {
@@ -700,24 +754,35 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const contextValue = React.useMemo(() => ({
+    user, 
+    userProfile, 
+    isInitialLoading,
+    isActionLoading,
+    language,
+    loginWithGoogle, 
+    loginAsDemoUser,
+    logout, 
+    updateProfile,
+    toggleSavePost,
+    switchLanguage,
+    notifications,
+    unreadNotificationsCount,
+    markNotificationAsRead,
+    markAllNotificationsAsRead,
+    addNotification
+  }), [
+    user, 
+    userProfile, 
+    isInitialLoading,
+    isActionLoading,
+    language,
+    notifications,
+    unreadNotificationsCount
+  ]);
+
   return (
-    <AuthContext.Provider value={{ 
-      user, 
-      userProfile, 
-      isInitialLoading,
-      isActionLoading,
-      language,
-      loginWithGoogle, 
-      loginAsDemoUser,
-      logout, 
-      updateProfile,
-      switchLanguage,
-      notifications,
-      unreadNotificationsCount,
-      markNotificationAsRead,
-      markAllNotificationsAsRead,
-      addNotification
-    }}>
+    <AuthContext.Provider value={contextValue}>
       {children}
     </AuthContext.Provider>
   );
