@@ -1,135 +1,32 @@
-import React, { useState } from 'react';
+/**
+ * @license
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { MoreVertical, Edit, Trash2, Check, Clock, UserPlus, MapPin, Heart, MessageSquare, Bookmark, Share2 } from 'lucide-react';
+import { 
+  MoreVertical, 
+  Edit, 
+  Trash2, 
+  Check, 
+  Clock, 
+  UserPlus, 
+  MapPin, 
+  Heart, 
+  MessageSquare, 
+  Bookmark, 
+  Share2, 
+  Volume2, 
+  VolumeX, 
+  Languages, 
+  Loader2 
+} from 'lucide-react';
 import { Post, UserProfile, Comment } from '../types';
 import { db, doc, updateDoc, arrayUnion, arrayRemove } from '../lib/firebase';
 import { safeString, safeDateString } from '../lib/utils';
-
-// Subtle high-quality client-side translation helper for agrarian content
-const translatePostContent = (text: string, toLanguage: 'hi' | 'en'): string => {
-  const textNormalized = text.trim();
-
-  // 1. High-precision predefined translations for seeded posts to ensure 100% flawless professional experience
-  if (textNormalized.includes('मौसम में गन्ने की फसल') || textNormalized.includes('ब्लैक बग')) {
-    return 'Dear farmer brothers, an outbreak of "Black Bug" (black insects) is being seen in the sugarcane crop in the current season. To control this, please avoid excessive spraying of chemical pesticides.\n\nNatural remedy: Boil 1 kg of neem leaves and 250 g of crushed garlic in 5 liters of buttermilk (whey) per acre. Strain and mix with 150 liters of water, then spray in the morning. This repels pests and strengthens the leaves. If you have any doubts, comment immediately!';
-  }
-
-  if (textNormalized.includes('जैविक विधि से तैयार') || textNormalized.includes('जीवामृत')) {
-    return 'Today, organically prepared "Jeevamrut" was sprayed on my farm. Mixed 10 kg native cow dung, 8 liters cow urine, 2 kg jaggery, 2 kg gram flour, and 1 kg living soil from under a peepal tree in 200 liters of water and fermented it for 4 days.\n\nBenefits: The color of the crop has turned deep green and earthworms are active again in the soil. Adopt organic farming, protect soil health!';
-  }
-
-  // Dual mapping: English to Hindi seeded posts
-  if (textNormalized.toLowerCase().includes('black bug') || textNormalized.toLowerCase().includes('sugarcane crop')) {
-    return 'किसान भाइयों, वर्तमान मौसम में गन्ने की फसल में "ब्लैक बग" (काले कीड़े) का प्रकोप देखा जा रहा है। इसके नियंत्रण के लिए कृपया रासायनिक कीटनाशकों के अत्यधिक छिड़काव से बचें। \n\nप्राकृतिक उपचार: प्रति एकड़ 5 लीटर मट्ठे (छाछ) में 1 किलो नीम की पत्ती और 250 ग्राम लहसुन पीसकर उबालें। छानकर 150 लीटर पानी में मिलाकर सुबह के समय छिड़काव करें। यह कीटों को भगाता है और पत्तों को मजबूती प्रदान करता है। किसी भी संदेह की स्थिति में तुरंत कमेंट करें!';
-  }
-
-  if (textNormalized.toLowerCase().includes('jeevamrut') || textNormalized.toLowerCase().includes('organically prepared')) {
-    return 'आज मेरे खेत में जैविक विधि से तैयार "जीवामृत" का छिड़काव किया गया। 200 लीटर पानी में 10 किलो देसी गाय का गोबर, 8 लीटर गोमूत्र, 2 किलो गुड़, 2 किलो बेसन और 1 किलो पीपल के पेड़ के नीचे की सजीव मिट्टी को मिलाकर 4 दिन फर्मेंट किया था। \n\nफायदे: फसल का रंग गहरा हरा हो गया है और केंचुए फिर से भूमि में सक्रिय हो रहे हैं। जैविक खेती अपनाएं, भूमि का स्वास्थ्य बचाएं!';
-  }
-
-  // 2. Adaptive dictionary translation for dynamic custom posts
-  const engToHinDict: Record<string, string> = {
-    'hello': 'नमस्ते',
-    'farmer': 'किसान',
-    'farmers': 'किसानों',
-    'farming': 'खेती',
-    'agriculture': 'कृषि',
-    'crop': 'फसल',
-    'crops': 'फसलों',
-    'soil': 'मिट्टी',
-    'water': 'पानी',
-    'seed': 'बीज',
-    'seeds': 'बीजों',
-    'fertilizer': 'उर्वरक',
-    'fertilizers': 'उर्वरकों',
-    'pest': 'कीट',
-    'pests': 'कीटों',
-    'disease': 'बीमारी',
-    'diseases': 'बीमारियों',
-    'organic': 'जैविक',
-    'green': 'हरा',
-    'wheat': 'गेहूं',
-    'rice': 'धान',
-    'sugarcane': 'गन्ना',
-    'mustard': 'सरसों',
-    'yield': 'पैदावार',
-    'market': 'मंडी',
-    'price': 'मूल्य',
-    'weather': 'मौसम',
-    'rain': 'बारिश',
-    'expert': 'विशेषज्ञ',
-    'today': 'आज',
-    'good': 'अच्छा',
-    'spraying': 'छिड़काव',
-    'sprayed': 'छिड़काव किया',
-    'benefits': 'फायदे',
-    'protect': 'सुरक्षित',
-    'health': 'स्वास्थ्य',
-    'help': 'मदद',
-    'experience': 'अनुभव',
-    'research': 'अनुसंधान',
-    'success': 'सफलता'
-  };
-
-  const hinToEngDict: Record<string, string> = {
-    'नमस्कार': 'Greetings',
-    'नमस्ते': 'Hello',
-    'किसान': 'farmer',
-    'किसानों': 'farmers',
-    'खेती': 'farming',
-    'कृषि': 'agriculture',
-    'फसल': 'crop',
-    'फसलों': 'crops',
-    'मिट्टी': 'soil',
-    'पानी': 'water',
-    'बीज': 'seed',
-    'बीजों': 'seeds',
-    'उर्वरक': 'fertilizer',
-    'खाद': 'manure',
-    'कीट': 'pest',
-    'कीटों': 'pests',
-    'बीमारी': 'disease',
-    'बीमारियों': 'diseases',
-    'जैविक': 'organic',
-    'हरा': 'green',
-    'गेहूं': 'wheat',
-    'धान': 'rice',
-    'गन्ना': 'sugarcane',
-    'सरसों': 'mustard',
-    'पैदावार': 'yield',
-    'मंडी': 'market',
-    'मूल्य': 'price',
-    'मौसम': 'weather',
-    'बारिश': 'rain',
-    'विशेषज्ञ': 'expert',
-    'आज': 'today',
-    'छिड़काव': 'spraying',
-    'फायदे': 'benefits',
-    'स्वास्थ्य': 'health'
-  };
-
-  if (toLanguage === 'hi') {
-    let result = text;
-    for (const [eng, hin] of Object.entries(engToHinDict)) {
-      const regex = new RegExp(`\\b${eng}\\b`, 'gi');
-      result = result.replace(regex, hin);
-    }
-    if (result === text) {
-      return `[अनुवाद]: ${text}\n\n(यह पोस्ट अंग्रेजी में लिखी गई थी)`;
-    }
-    return result;
-  } else {
-    let result = text;
-    for (const [hin, eng] of Object.entries(hinToEngDict)) {
-      const regex = new RegExp(hin, 'g');
-      result = result.replace(regex, eng);
-    }
-    if (result === text) {
-      return `[Translated]: ${text}\n\n(This post was originally written in Hindi)`;
-    }
-    return result;
-  }
-};
+import { voiceService } from '../lib/voiceAssistant';
+import { detectPostLanguage, translateContent, getPostAuthorAttribution } from '../lib/translationService';
 
 interface PostCardProps {
   post: Post;
@@ -161,7 +58,102 @@ export const PostCard: React.FC<PostCardProps> = React.memo(({
   const [activePostMenuId, setActivePostMenuId] = useState<string | null>(null);
   const [expandedComments, setExpandedComments] = useState(false);
   const [commentInput, setCommentInput] = useState('');
+
+  // Translation State
   const [showTranslation, setShowTranslation] = useState(false);
+  const [translatedText, setTranslatedText] = useState<string | null>(null);
+  const [isTranslating, setIsTranslating] = useState(false);
+
+  // Global Speech State Subscription
+  const [isSpeaking, setIsSpeaking] = useState(false);
+
+  // Detect whether original text is primarily Hindi or English
+  const originalLang = detectPostLanguage(post.content);
+  const isOriginalHindi = originalLang === 'hi';
+
+  // Listen to global voice service to keep speech states strictly exclusive across all posts
+  useEffect(() => {
+    const unsubscribe = voiceService.subscribe((activeId) => {
+      setIsSpeaking(activeId === post.id);
+    });
+    return () => unsubscribe();
+  }, [post.id]);
+
+  // Handle Listen / Read Aloud Action
+  const handleListen = () => {
+    if (!voiceService.isSupported()) {
+      triggerToast("Speech synthesis is not supported in this browser.");
+      return;
+    }
+
+    if (isSpeaking) {
+      voiceService.stop();
+      return;
+    }
+
+    // Determine target text and appropriate language code
+    let textToRead: string;
+    let speechLang: 'hi' | 'en';
+
+    if (showTranslation && translatedText) {
+      textToRead = translatedText;
+      // If original was Hindi and translated to English -> read in Indian English (en-IN)
+      // If original was English and translated to Hindi -> read in Hindi (hi-IN)
+      speechLang = isOriginalHindi ? 'en' : 'hi';
+    } else {
+      textToRead = post.content;
+      speechLang = isOriginalHindi ? 'hi' : 'en';
+    }
+
+    // Add author attribution at the very end of voice output (after complete post is read)
+    let spokenText = textToRead;
+    const attribution = getPostAuthorAttribution(post.authorName, speechLang, textToRead);
+    if (attribution) {
+      const trimmed = spokenText.trim();
+      const lastChar = trimmed.slice(-1);
+      const separator = (lastChar === '.' || lastChar === '।' || lastChar === '!' || lastChar === '?') ? '\n\n' : '.\n\n';
+      spokenText = `${trimmed}${separator}${attribution}`;
+    }
+
+    voiceService.speakForId(
+      post.id,
+      spokenText,
+      speechLang,
+      () => {},
+      () => {},
+      () => {
+        triggerToast("Could not play audio. Please check device sound settings.");
+      }
+    );
+  };
+
+  // Handle Translate Action (Hindi <-> English)
+  const handleToggleTranslate = async () => {
+    if (showTranslation) {
+      // Toggle back to original
+      setShowTranslation(false);
+      return;
+    }
+
+    if (translatedText) {
+      // Already cached in component
+      setShowTranslation(true);
+      return;
+    }
+
+    try {
+      setIsTranslating(true);
+      const targetLang = isOriginalHindi ? 'en' : 'hi';
+      const result = await translateContent(post.content, targetLang);
+      setTranslatedText(result);
+      setShowTranslation(true);
+    } catch (err) {
+      console.error("Translation error:", err);
+      triggerToast("Translation temporarily unavailable.");
+    } finally {
+      setIsTranslating(false);
+    }
+  };
 
   const isAuthorMe = userProfile?.uid === post.authorId;
   const hasAppreciated = userProfile ? post.likes?.includes(userProfile.uid) : false;
@@ -237,6 +229,9 @@ export const PostCard: React.FC<PostCardProps> = React.memo(({
       console.error("Error voting:", err);
     }
   };
+
+  const currentlyDisplayedText = (showTranslation && translatedText) ? translatedText : post.content;
+  const currentLang = (showTranslation && translatedText) ? (isOriginalHindi ? 'en' : 'hi') : originalLang;
 
   return (
     <motion.div 
@@ -378,27 +373,63 @@ export const PostCard: React.FC<PostCardProps> = React.memo(({
           )}
         </div>
 
+        {/* Translation Banner / Original indicator when translated */}
+        {showTranslation && (
+          <div className="mb-2 flex items-center justify-between bg-emerald-50/60 border border-emerald-200/50 px-3 py-1.5 rounded-xl text-[11px] font-semibold text-emerald-800">
+            <span className="flex items-center gap-1.5">
+              <Languages className="w-3.5 h-3.5 text-emerald-600" />
+              {isOriginalHindi ? 'Translated to English (मूल: हिंदी)' : 'हिंदी अनुवाद (Original: English)'}
+            </span>
+            <button
+              onClick={handleToggleTranslate}
+              className="text-[10px] font-bold text-emerald-700 hover:text-emerald-900 underline ml-2"
+            >
+              Show original • मूल देखें
+            </button>
+          </div>
+        )}
+
         {/* Post Content */}
         <p className="text-[15px] md:text-[16px] text-krishx-dark-900 leading-relaxed tracking-wide font-medium mb-3 whitespace-pre-wrap break-words">
-          {showTranslation 
-            ? translatePostContent(post.content, /[\u0900-\u097F]/.test(post.content) ? 'en' : 'hi') 
-            : post.content}
+          {currentlyDisplayedText}
         </p>
 
-        {/* Subtle, X/LinkedIn-style translation button */}
-        <div className="mb-4">
+        {/* Inline Actions Bar: 🌐 Translate and 🔊 Quick Listen */}
+        <div className="flex items-center justify-between mb-4 flex-wrap gap-2 text-xs">
+          {/* Translate Button */}
           <button
-            onClick={() => setShowTranslation(!showTranslation)}
-            className="text-[11px] font-bold text-krishx-green-700/85 hover:text-krishx-green-800 hover:underline transition-all cursor-pointer flex items-center gap-1 bg-transparent border-0 p-0"
+            onClick={handleToggleTranslate}
+            disabled={isTranslating}
+            className="inline-flex items-center gap-1.5 text-[11px] font-bold text-krishx-green-700 hover:text-krishx-green-800 hover:underline transition-all cursor-pointer bg-emerald-50/50 hover:bg-emerald-50 border border-emerald-200/50 px-2.5 py-1 rounded-lg disabled:opacity-50"
+            title={isOriginalHindi ? "Translate this post to English" : "इस पोस्ट का हिंदी में अनुवाद करें"}
           >
-            {showTranslation ? (
-              <span>Show Original • मूल पोस्ट देखें</span>
-            ) : /[\u0900-\u097F]/.test(post.content) ? (
-              <span>Translate to English</span>
+            {isTranslating ? (
+              <>
+                <Loader2 className="w-3.5 h-3.5 animate-spin text-krishx-green-600" />
+                <span>Translating... / अनुवाद हो रहा है...</span>
+              </>
+            ) : showTranslation ? (
+              <>
+                <Languages className="w-3.5 h-3.5" />
+                <span>Show Original • मूल पोस्ट देखें</span>
+              </>
+            ) : isOriginalHindi ? (
+              <>
+                <Languages className="w-3.5 h-3.5" />
+                <span>Translate to English</span>
+              </>
             ) : (
-              <span>हिंदी में अनुवाद करें</span>
+              <>
+                <Languages className="w-3.5 h-3.5" />
+                <span>हिंदी में अनुवाद करें</span>
+              </>
             )}
           </button>
+
+          {/* Language tag pill */}
+          <span className="text-[10px] font-bold uppercase tracking-wider text-krishx-dark-800/40 bg-krishx-earth-50 px-2 py-0.5 rounded-md">
+            {currentLang === 'hi' ? '🇮🇳 Hindi (हिंदी)' : '🌐 English'}
+          </span>
         </div>
 
         {/* Interactive Poll Panel */}
@@ -497,7 +528,36 @@ export const PostCard: React.FC<PostCardProps> = React.memo(({
             </button>
           </div>
 
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1.5">
+            {/* 🔊 Listen / Read Aloud Action Button */}
+            <button 
+              onClick={handleListen}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition-all text-[11px] font-bold select-none ${
+                isSpeaking 
+                  ? 'bg-krishx-green-600 text-white animate-pulse shadow-md ring-2 ring-krishx-green-400/40' 
+                  : 'bg-emerald-50 text-emerald-800 hover:bg-emerald-100/90 border border-emerald-200/70'
+              }`}
+              title={
+                isSpeaking 
+                  ? "Stop speech playback • रुकें" 
+                  : currentLang === 'hi' 
+                    ? "Listen aloud in Hindi (हिंदी में सुनें)" 
+                    : "Listen aloud in Indian English"
+              }
+            >
+              {isSpeaking ? (
+                <>
+                  <VolumeX className="w-3.5 h-3.5 animate-pulse" />
+                  <span>Stop</span>
+                </>
+              ) : (
+                <>
+                  <Volume2 className="w-3.5 h-3.5 text-emerald-700" />
+                  <span>Listen</span>
+                </>
+              )}
+            </button>
+
             {/* Save */}
             <button 
               onClick={() => onToggleSave(post.id)}

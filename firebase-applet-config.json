@@ -7,5 +7,6 @@
   "storageBucket": "lofty-market-zbwbv.firebasestorage.app",
   "messagingSenderId": "81317196678",
   "measurementId": "",
-  "oAuthClientId": "81317196678-rqrku5m7gmtu1t74j2stjinvcee6falr.apps.googleusercontent.com"
+  "oAuthClientId": "81317196678-rqrku5m7gmtu1t74j2stjinvcee6falr.apps.googleusercontent.com",
+  "recaptchaSiteKey": ""
 }

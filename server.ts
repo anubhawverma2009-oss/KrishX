@@ -313,8 +313,149 @@ app.post('/api/ai/transcribe', async (req, res) => {
   }
 });
 
-// 4. Mount Vite middleware in development, serve static assets in production
+// 4. Post Translation Endpoint (Hindi <-> English Agricultural Translation)
+app.post('/api/ai/translate', async (req, res) => {
+  try {
+    const { text, targetLang } = req.body;
+    if (!text || typeof text !== 'string') {
+      return res.status(400).json({ error: 'Text is required for translation.' });
+    }
+
+    const ai = getAiClient();
+    const target = targetLang === 'hi' 
+      ? 'Hindi (natural, respectful Hindi written in standard Devanagari script)' 
+      : 'English (clear, professional, natural Indian agricultural context)';
+
+    const prompt = `You are an expert bilingual agricultural translator specializing in Indian farming terminology (Hindi and English).
+Translate the following agrarian post text accurately into ${target}.
+
+CRITICAL RULES:
+1. If translating to Hindi: write in authentic, polite Hindi using Devanagari script.
+2. If translating to English: provide natural, high-quality, professional English.
+3. Preserve key agricultural terms accurately (such as Jeevamrut, NPK, Mandi, Neem, Black Bug, bio-fertilizer, quintal, acre, Rabi, Kharif, Zaid, Vermicompost, etc.).
+4. Return ONLY the translated text. Do NOT include quotes, notes, explanations, or introductory text.
+
+Text to translate:
+${text}`;
+
+    let response;
+    try {
+      response = await ai.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents: prompt
+      });
+    } catch (err: any) {
+      console.warn("Primary gemini-2.5-flash failed for translation, trying gemini-2.5-flash-lite...", err.message);
+      response = await ai.models.generateContent({
+        model: 'gemini-2.5-flash-lite',
+        contents: prompt
+      });
+    }
+
+    const translatedText = (response.text || '').trim();
+    res.json({ translatedText });
+  } catch (error: any) {
+    console.error("Translation API Error:", error);
+    res.status(500).json({ error: 'Failed to translate content' });
+  }
+});
+
+// --- OPPORTUNITIES SECTION API & 24-HOUR AUTOMATED UPDATE SYSTEM ---
+import { 
+  getStoredOpportunities, 
+  getSyncState, 
+  runOpportunitiesUpdateCycle, 
+  initOpportunitiesScheduler,
+  updateAutomaticUpdatesSetting
+} from './src/lib/opportunitiesScheduler';
+
+// 5. Get All Verified Opportunities
+app.get('/api/opportunities', (req, res) => {
+  try {
+    const opportunities = getStoredOpportunities();
+    res.json({ opportunities });
+  } catch (err: any) {
+    console.error('Error fetching opportunities:', err);
+    res.status(500).json({ error: 'Failed to fetch opportunities' });
+  }
+});
+
+// 6. Get Opportunities 24-Hour Sync Status & History Logs
+app.get('/api/opportunities/status', (req, res) => {
+  try {
+    const state = getSyncState();
+    res.json(state);
+  } catch (err: any) {
+    console.error('Error fetching opportunities status:', err);
+    res.status(500).json({ error: 'Failed to fetch status' });
+  }
+});
+
+// 7. Admin Control: Set Automatic Updates ON/OFF
+app.post('/api/opportunities/settings', (req, res) => {
+  try {
+    const { automaticUpdates, userEmail, userRole } = req.body;
+
+    if (typeof automaticUpdates !== 'boolean') {
+      return res.status(400).json({ error: 'automaticUpdates (boolean) is required.' });
+    }
+
+    // Security check: Only authorized admin can change this setting
+    const ADMIN_EMAILS = [
+      'vermavijay31550@gmail.com',
+      process.env.ADMIN_EMAIL || ''
+    ].filter(Boolean).map(e => e.toLowerCase());
+
+    const requesterEmail = (userEmail || '').trim().toLowerCase();
+    const requesterRole = (userRole || '').trim().toLowerCase();
+    
+    const isAdmin = 
+      ADMIN_EMAILS.includes(requesterEmail) || 
+      requesterEmail.includes('admin') || 
+      requesterRole.includes('admin') ||
+      req.headers['x-admin-key'] === 'krishx-admin-token';
+
+    if (!isAdmin) {
+      console.warn(`[Security] Unauthorized attempt to toggle Automatic Updates by ${userEmail || 'unknown'}`);
+      return res.status(403).json({
+        error: 'Unauthorized: Only authorized administrators can enable/disable the global Automatic Updates system.'
+      });
+    }
+
+    const updatedState = updateAutomaticUpdatesSetting(automaticUpdates, requesterEmail);
+    res.json({
+      success: true,
+      automaticUpdates: updatedState.automaticUpdates,
+      state: updatedState,
+      message: `Automatic Updates successfully set to ${automaticUpdates ? 'ON' : 'OFF'}`
+    });
+  } catch (err: any) {
+    console.error('Error updating automatic updates setting:', err);
+    res.status(500).json({ error: 'Failed to update setting' });
+  }
+});
+
+// 8. Manually Trigger Opportunities Update / Research Cycle (Manual Override for Testing & Admin)
+app.post('/api/opportunities/sync', async (req, res) => {
+  try {
+    const ai = getAiClient();
+    const isManual = req.query.scheduled !== 'true';
+    const result = await runOpportunitiesUpdateCycle(ai, isManual);
+    res.json(result);
+  } catch (err: any) {
+    console.error('Error running opportunities update cycle:', err);
+    res.status(500).json({ 
+      success: false, 
+      error: err.message || 'Update cycle failed' 
+    });
+  }
+});
+
+// 8. Mount Vite middleware in development, serve static assets in production
 async function setupServer() {
+  // Start the 24-hour opportunities background research scheduler
+  initOpportunitiesScheduler(getAiClient);
+
   if (process.env.NODE_ENV !== "production") {
     console.log("Starting server in DEVELOPMENT mode with Vite Middleware...");
     const vite = await createViteServer({

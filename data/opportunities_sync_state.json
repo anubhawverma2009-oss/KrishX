@@ -1,0 +1,224 @@
+{
+  "automaticUpdates": true,
+  "lastRunAt": "2026-09-24T17:14:40.013Z",
+  "nextRunAt": "2026-09-25T17:14:40.013Z",
+  "isRunning": false,
+  "lastSummary": "Cycle completed in 1s: All 16 opportunities verified. No new additions needed.",
+  "totalOpportunities": 16,
+  "newItemsLastRun": 0,
+  "updatedItemsLastRun": 2,
+  "logs": [
+    {
+      "timestamp": "2026-09-24T17:03:15.308Z",
+      "level": "info",
+      "message": "Opportunities background service initialized with verified Indian agriculture opportunities."
+    },
+    {
+      "timestamp": "2026-09-24T17:03:20.314Z",
+      "level": "info",
+      "message": "Starting 24-hour agricultural opportunities research and update cycle..."
+    },
+    {
+      "timestamp": "2026-09-24T17:03:20.314Z",
+      "level": "info",
+      "message": "Step 1: Searching verified online sources & government repositories for active schemes & programs..."
+    },
+    {
+      "timestamp": "2026-09-24T17:03:20.315Z",
+      "level": "info",
+      "message": "Executing live AI search grounding across official portals (pmkisan.gov.in, mnre.gov.in, agricoop.nic.in, icar.org.in, nabard.org)..."
+    },
+    {
+      "timestamp": "2026-09-24T17:03:20.853Z",
+      "level": "warn",
+      "message": "Search grounding query warning: {\"error\":{\"code\":400,\"message\":\"Tool use with a response mime type: 'application/json' is unsupported\",\"status\":\"INVALID_ARGUMENT\"}}. Proceeding with curated verified registry verification."
+    },
+    {
+      "timestamp": "2026-09-24T17:03:20.853Z",
+      "level": "info",
+      "message": "Step 2 & 3: Filtering and strictly verifying 16 opportunity candidates..."
+    },
+    {
+      "timestamp": "2026-09-24T17:03:20.855Z",
+      "level": "info",
+      "message": "Updated existing verified opportunity: \"कृषि ड्रोन पायलट प्रमाणन एवं प्रशिक्षण (Kisan Drone Pilot Training)\" with updated info."
+    },
+    {
+      "timestamp": "2026-09-24T17:03:20.856Z",
+      "level": "success",
+      "message": "Cycle completed in 1s: All 16 opportunities verified. No new additions needed."
+    },
+    {
+      "timestamp": "2026-09-24T17:03:30.341Z",
+      "level": "info",
+      "message": "Starting 24-hour agricultural opportunities research and update cycle..."
+    },
+    {
+      "timestamp": "2026-09-24T17:03:30.341Z",
+      "level": "info",
+      "message": "Step 1: Searching verified online sources & government repositories for active schemes & programs..."
+    },
+    {
+      "timestamp": "2026-09-24T17:03:30.342Z",
+      "level": "info",
+      "message": "Executing live AI search grounding across official portals (pmkisan.gov.in, mnre.gov.in, agricoop.nic.in, icar.org.in, nabard.org)..."
+    },
+    {
+      "timestamp": "2026-09-24T17:03:30.837Z",
+      "level": "warn",
+      "message": "Search grounding query warning: {\"error\":{\"code\":400,\"message\":\"Tool use with a response mime type: 'application/json' is unsupported\",\"status\":\"INVALID_ARGUMENT\"}}. Proceeding with curated verified registry verification."
+    },
+    {
+      "timestamp": "2026-09-24T17:03:30.837Z",
+      "level": "info",
+      "message": "Step 2 & 3: Filtering and strictly verifying 16 opportunity candidates..."
+    },
+    {
+      "timestamp": "2026-09-24T17:03:30.837Z",
+      "level": "info",
+      "message": "Updated existing verified opportunity: \"कृषि ड्रोन पायलट प्रमाणन एवं प्रशिक्षण (Kisan Drone Pilot Training)\" with updated info."
+    },
+    {
+      "timestamp": "2026-09-24T17:03:30.839Z",
+      "level": "info",
+      "message": "Updated existing verified opportunity: \"कृषि ड्रोन पायलट प्रमाणन एवं प्रशिक्षण (Kisan Drone Pilot Training)\" with updated info."
+    },
+    {
+      "timestamp": "2026-09-24T17:03:30.840Z",
+      "level": "success",
+      "message": "Cycle completed in 0s: All 16 opportunities verified. No new additions needed."
+    },
+    {
+      "timestamp": "2026-09-24T17:04:44.777Z",
+      "level": "info",
+      "message": "Starting 24-hour agricultural opportunities research and update cycle..."
+    },
+    {
+      "timestamp": "2026-09-24T17:04:44.778Z",
+      "level": "info",
+      "message": "Step 1: Searching verified online sources & government repositories for active schemes & programs..."
+    },
+    {
+      "timestamp": "2026-09-24T17:04:44.778Z",
+      "level": "info",
+      "message": "Executing live AI search grounding across official portals (pmkisan.gov.in, mnre.gov.in, agricoop.nic.in, icar.org.in, nabard.org)..."
+    },
+    {
+      "timestamp": "2026-09-24T17:04:45.513Z",
+      "level": "warn",
+      "message": "Search grounding query warning: {\"error\":{\"code\":400,\"message\":\"Tool use with a response mime type: 'application/json' is unsupported\",\"status\":\"INVALID_ARGUMENT\"}}. Proceeding with curated verified registry verification."
+    },
+    {
+      "timestamp": "2026-09-24T17:04:45.513Z",
+      "level": "info",
+      "message": "Step 2 & 3: Filtering and strictly verifying 16 opportunity candidates..."
+    },
+    {
+      "timestamp": "2026-09-24T17:04:45.514Z",
+      "level": "info",
+      "message": "Updated existing verified opportunity: \"कृषि ड्रोन पायलट प्रमाणन एवं प्रशिक्षण (Kisan Drone Pilot Training)\" with updated info."
+    },
+    {
+      "timestamp": "2026-09-24T17:04:45.515Z",
+      "level": "info",
+      "message": "Updated existing verified opportunity: \"कृषि ड्रोन पायलट प्रमाणन एवं प्रशिक्षण (Kisan Drone Pilot Training)\" with updated info."
+    },
+    {
+      "timestamp": "2026-09-24T17:04:45.517Z",
+      "level": "success",
+      "message": "Cycle completed in 1s: All 16 opportunities verified. No new additions needed."
+    },
+    {
+      "timestamp": "2026-09-24T17:06:49.808Z",
+      "level": "info",
+      "message": "Starting 24-hour agricultural opportunities research and update cycle..."
+    },
+    {
+      "timestamp": "2026-09-24T17:06:49.809Z",
+      "level": "info",
+      "message": "Step 1: Searching verified online sources & government repositories for active schemes & programs..."
+    },
+    {
+      "timestamp": "2026-09-24T17:06:49.809Z",
+      "level": "info",
+      "message": "Executing live AI search grounding across official portals (pmkisan.gov.in, mnre.gov.in, agricoop.nic.in, icar.org.in, nabard.org)..."
+    },
+    {
+      "timestamp": "2026-09-24T17:06:50.468Z",
+      "level": "warn",
+      "message": "Search grounding query warning: {\"error\":{\"code\":400,\"message\":\"Tool use with a response mime type: 'application/json' is unsupported\",\"status\":\"INVALID_ARGUMENT\"}}. Proceeding with curated verified registry verification."
+    },
+    {
+      "timestamp": "2026-09-24T17:06:50.468Z",
+      "level": "info",
+      "message": "Step 2 & 3: Filtering and strictly verifying 16 opportunity candidates..."
+    },
+    {
+      "timestamp": "2026-09-24T17:06:50.468Z",
+      "level": "info",
+      "message": "Updated existing verified opportunity: \"कृषि ड्रोन पायलट प्रमाणन एवं प्रशिक्षण (Kisan Drone Pilot Training)\" with updated info."
+    },
+    {
+      "timestamp": "2026-09-24T17:06:50.469Z",
+      "level": "info",
+      "message": "Updated existing verified opportunity: \"कृषि ड्रोन पायलट प्रमाणन एवं प्रशिक्षण (Kisan Drone Pilot Training)\" with updated info."
+    },
+    {
+      "timestamp": "2026-09-24T17:06:50.469Z",
+      "level": "success",
+      "message": "Cycle completed in 1s: All 16 opportunities verified. No new additions needed."
+    },
+    {
+      "timestamp": "2026-09-24T17:14:01.170Z",
+      "level": "warn",
+      "message": "Automatic Updates turned OFF by vermavijay31550@gmail.com. Background research and scheduled API calls paused."
+    },
+    {
+      "timestamp": "2026-09-24T17:14:26.640Z",
+      "level": "info",
+      "message": "Automatic Updates turned ON by vermavijay31550@gmail.com. 24-hour scheduled research active."
+    },
+    {
+      "timestamp": "2026-09-24T17:14:39.481Z",
+      "level": "info",
+      "message": "Starting 24-hour agricultural opportunities research and update cycle..."
+    },
+    {
+      "timestamp": "2026-09-24T17:14:39.481Z",
+      "level": "info",
+      "message": "Step 1: Searching verified online sources & government repositories for active schemes & programs..."
+    },
+    {
+      "timestamp": "2026-09-24T17:14:39.481Z",
+      "level": "info",
+      "message": "Executing live AI search grounding across official portals (pmkisan.gov.in, mnre.gov.in, agricoop.nic.in, icar.org.in, nabard.org)..."
+    },
+    {
+      "timestamp": "2026-09-24T17:14:40.010Z",
+      "level": "warn",
+      "message": "Search grounding query warning: {\"error\":{\"code\":400,\"message\":\"Tool use with a response mime type: 'application/json' is unsupported\",\"status\":\"INVALID_ARGUMENT\"}}. Proceeding with curated verified registry verification."
+    },
+    {
+      "timestamp": "2026-09-24T17:14:40.010Z",
+      "level": "info",
+      "message": "Step 2 & 3: Filtering and strictly verifying 16 opportunity candidates..."
+    },
+    {
+      "timestamp": "2026-09-24T17:14:40.011Z",
+      "level": "info",
+      "message": "Updated existing verified opportunity: \"कृषि ड्रोन पायलट प्रमाणन एवं प्रशिक्षण (Kisan Drone Pilot Training)\" with updated info."
+    },
+    {
+      "timestamp": "2026-09-24T17:14:40.012Z",
+      "level": "info",
+      "message": "Updated existing verified opportunity: \"कृषि ड्रोन पायलट प्रमाणन एवं प्रशिक्षण (Kisan Drone Pilot Training)\" with updated info."
+    },
+    {
+      "timestamp": "2026-09-24T17:14:40.013Z",
+      "level": "success",
+      "message": "Cycle completed in 1s: All 16 opportunities verified. No new additions needed."
+    }
+  ],
+  "updatedBy": "vermavijay31550@gmail.com",
+  "updatedSettingAt": "2026-09-24T17:14:26.640Z"
+}

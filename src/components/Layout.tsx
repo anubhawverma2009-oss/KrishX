@@ -8,6 +8,7 @@ import { useAuth } from '../context/AuthContext';
 import { getTranslation } from '../lib/i18n';
 import { motion, AnimatePresence } from 'motion/react';
 import { NotificationCenter } from './NotificationCenter';
+import { VoiceAssistantModal } from './VoiceAssistantModal';
 import { 
   Home, 
   Bot, 
@@ -21,7 +22,10 @@ import {
   Bell,
   Settings,
   ShieldCheck,
-  Award
+  Award,
+  Mic,
+  Volume2,
+  Briefcase
 } from 'lucide-react';
 
 interface LayoutProps {
@@ -35,9 +39,19 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTa
   const t = getTranslation(language);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const triggerToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => {
+      setToastMessage(null);
+    }, 3000);
+  };
 
   const navigationItems = [
     { id: 'home', label: t.nav.home, icon: Home },
+    { id: 'opportunities', label: t.nav.opportunities, icon: Briefcase },
     { id: 'network', label: t.nav.network, icon: Users2 },
     { id: 'ai', label: t.nav.ai, icon: Bot, highlight: true },
     { id: 'profile', label: t.nav.profile, icon: UserIcon },
@@ -110,6 +124,15 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTa
 
         {/* Footer Sidebar Actions */}
         <div className="space-y-4 pt-5 border-t border-krishx-earth-200/40">
+          {/* Voice Assistant Button for Desktop */}
+          <button
+            onClick={() => setIsVoiceModalOpen(true)}
+            className="w-full flex items-center justify-center gap-2 py-3 bg-gradient-to-r from-krishx-green-600 to-krishx-green-700 hover:from-krishx-green-700 hover:to-krishx-green-800 text-white rounded-2xl text-xs font-black uppercase tracking-widest transition-all shadow-md cursor-pointer"
+          >
+            <Mic className="w-4 h-4 animate-pulse" />
+            <span>Voice Assistant 🎙️</span>
+          </button>
+
           <div className="flex flex-col gap-1.5 px-2">
             <p className="text-[10px] font-black text-krishx-dark-700/40 uppercase tracking-widest">Interface Language</p>
             <div className="flex gap-1 p-1 bg-krishx-earth-50/50 rounded-xl border border-krishx-earth-200/40">
@@ -178,6 +201,16 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTa
           </div>
         </div>
         <div className="flex items-center gap-2">
+          {/* Voice Assistant Mic Button */}
+          <button 
+            onClick={() => setIsVoiceModalOpen(true)}
+            className="p-2 bg-krishx-green-50 text-krishx-green-700 hover:bg-krishx-green-100 rounded-xl transition-all flex items-center gap-1 font-bold text-xs shadow-sm"
+            title="KrishX Voice Assistant"
+          >
+            <Mic className="w-5 h-5 animate-pulse text-krishx-green-600" />
+            <span className="hidden sm:inline text-[11px]">Voice AI</span>
+          </button>
+
           <button className="p-2 text-krishx-dark-700/60 hover:text-krishx-dark-900 transition-colors"><Search className="w-5 h-5" strokeWidth={1.5} /></button>
           <div className="relative">
             <button 
@@ -329,6 +362,29 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTa
           );
         })}
       </nav>
+
+      {/* Voice Assistant Modal */}
+      <VoiceAssistantModal 
+        isOpen={isVoiceModalOpen}
+        onClose={() => setIsVoiceModalOpen(false)}
+        setActiveTab={setActiveTab}
+        triggerToast={triggerToast}
+      />
+
+      {/* Toast Notification */}
+      <AnimatePresence>
+        {toastMessage && (
+          <motion.div
+            initial={{ opacity: 0, y: 50, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.9 }}
+            className="fixed bottom-20 md:bottom-6 right-6 z-50 bg-krishx-dark-900 text-white px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3 border border-krishx-green-500/30 text-xs font-bold"
+          >
+            <div className="w-2 h-2 rounded-full bg-krishx-green-500 animate-ping" />
+            <span>{toastMessage}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

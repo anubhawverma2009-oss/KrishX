@@ -6,6 +6,7 @@
 import { collection, getDocs, getDoc, doc, writeBatch } from './firebase';
 import { db } from './firebase';
 import { Community, Opportunity, Post } from '../types';
+import { VERIFIED_INITIAL_OPPORTUNITIES } from './opportunitiesData';
 
 export async function seedInitialData() {
   console.log('KrishX Seeder: Checking for initial data...');
@@ -76,79 +77,17 @@ export async function seedInitialData() {
     const oppsCol = collection(db, 'opportunities');
     const oppsSnap = await getDocs(oppsCol);
 
-    if (oppsSnap.empty) {
-      console.log('Seeding initial agricultural opportunities...');
+    if (oppsSnap.empty || oppsSnap.size < VERIFIED_INITIAL_OPPORTUNITIES.length) {
+      console.log('Seeding and syncing verified agricultural opportunities...');
       const batch = writeBatch(db);
 
-      const initialOpps: Opportunity[] = [
-        {
-          id: 'pm-kusum',
-          title: 'पीएम-कुसुम योजना (PM-KUSUM Scheme)',
-          organization: 'नवीन और नवीकरणीय ऊर्जा मंत्रालय, भारत सरकार',
-          type: 'Scheme',
-          description: 'खेतों में सौर जल पंप स्थापित करने के लिए किसानों को 60% तक की भारी सब्सिडी। बंजर भूमि पर सौर संयंत्र लगाने के अवसर।',
-          eligibility: 'सभी किसान, सहकारी समितियां, और एफपीओ जिनके पास कृषि योग्य या बंजर भूमि हो।',
-          benefits: 'सिंचाई लागत 90% तक कम होगी। अतिरिक्त सौर बिजली को ग्रिड में बेचकर सालाना आय बढ़ाने का मौका।',
-          link: 'https://pmkusum.mnre.gov.in',
-          createdAt: new Date().toISOString(),
-          highlightColor: 'bg-krishx-earth-50 text-krishx-dark-700 border-krishx-earth-300'
-        },
-        {
-          id: 'drone-training',
-          title: 'कृषि ड्रोन संचालन प्रशिक्षण (Agricultural Drone Training)',
-          organization: 'राष्ट्रीय कृषि विस्तार एवं प्रबंधन संस्थान (MANAGE)',
-          type: 'Training',
-          description: 'खेतों में उर्वरक और कीटनाशकों के स्मार्ट छिड़काव के लिए 10 दिवसीय प्रमाणित ड्रोन उड़ाने का प्रशिक्षण कार्यक्रम।',
-          eligibility: 'कृषि छात्र, स्नातक या 10वीं पास प्रगतिशील युवा किसान (आयु 18-35 वर्ष)।',
-          benefits: 'प्रशिक्षण के बाद सरकारी मान्यता प्राप्त पायलट लाइसेंस। ड्रोन स्टार्टअप शुरू करने के लिए कम ब्याज दर पर ऋण सुविधा।',
-          link: 'https://www.manage.gov.in',
-          createdAt: new Date().toISOString(),
-          highlightColor: 'bg-teal-50 text-teal-800 border-teal-200'
-        },
-        {
-          id: 'organic-grant',
-          title: 'परंपरागत कृषि विकास योजना ग्रांट (PKVY Grant)',
-          organization: 'कृषि एवं किसान कल्याण मंत्रालय',
-          type: 'Grant',
-          description: 'जैविक खेती को बढ़ावा देने के लिए क्लस्टर निर्माण हेतु वित्तीय सहायता। 3 वर्षों के लिए प्रति हेक्टेयर ₹50,000 की राशि।',
-          eligibility: 'न्यूनतम 20 एकड़ क्षेत्र के साथ कम से कम 50 किसानों का सक्रिय क्लस्टर या FPO।',
-          benefits: 'जैविक खाद, बीज उत्पादन, मूल्य संवर्धन, ब्रांडिंग और पैकिंग के लिए सीधे बैंक खाते में सहायता राशि।',
-          link: 'https://dshd.dac.gov.in',
-          createdAt: new Date().toISOString(),
-          highlightColor: 'bg-amber-50 text-amber-800 border-amber-200'
-        },
-        {
-          id: 'agri-startup-fellowship',
-          title: 'कृषि-उद्यमिता फेलोशिप प्रोग्राम (Agri-Startup Fellowship)',
-          organization: 'कृषि अनुसंधान परिषद (ICAR) - पूसा कृषि',
-          type: 'Startup',
-          description: 'कृषि क्षेत्र में नए तकनीकी नवाचारों, स्मार्ट सेंसर, आईओटी या एआई आधारित समाधानों को स्टार्टअप में बदलने के लिए मेंटरशिप और सीड फंडिंग।',
-          eligibility: 'कृषि स्नातक छात्र, रिसर्चर्स, और इनोवेटर्स जिनके पास व्यावहारिक वर्किंग प्रोटोटाइप हो।',
-          benefits: '₹5 लाख से ₹25 लाख तक की वित्तीय सहायता (सीड ग्रांट)। आईसीआर के वैज्ञानिकों से डायरेक्ट लैब सपोर्ट।',
-          link: 'https://pusakrishi.icar.gov.in',
-          createdAt: new Date().toISOString(),
-          highlightColor: 'bg-blue-50 text-blue-800 border-blue-200'
-        },
-        {
-          id: 'msc-scholarship',
-          title: 'राष्ट्रीय कृषि छात्रवृत्ति (National Agri Scholarship)',
-          organization: 'भारतीय कृषि अनुसंधान परिषद (ICAR)',
-          type: 'Scholarship',
-          description: 'कृषि विश्वविद्यालयों में उच्च शिक्षा (M.Sc / Ph.D Agriculture) के लिए मेधावी छात्रों को मासिक वित्तीय छात्रवृत्ति सहायता।',
-          eligibility: 'मान्यता प्राप्त कृषि विश्वविद्यालय से उत्कृष्ट अंकों के साथ स्नातक छात्र।',
-          benefits: '₹12,000 प्रति माह फेलोशिप के साथ शैक्षणिक व्यय के लिए आकस्मिक निधि सहायता।',
-          link: 'https://icar.org.in',
-          createdAt: new Date().toISOString(),
-          highlightColor: 'bg-violet-50 text-violet-800 border-violet-200'
-        }
-      ];
-
-      initialOpps.forEach((opp) => {
+      VERIFIED_INITIAL_OPPORTUNITIES.forEach((opp) => {
         const docRef = doc(db, 'opportunities', opp.id);
-        batch.set(docRef, opp);
+        batch.set(docRef, opp, { merge: true });
       });
 
       await batch.commit();
+      console.log(`Synced ${VERIFIED_INITIAL_OPPORTUNITIES.length} verified opportunities to Firestore.`);
     }
 
     const postsCol = collection(db, 'posts');

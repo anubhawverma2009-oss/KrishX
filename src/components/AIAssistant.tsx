@@ -28,7 +28,8 @@ import {
   HelpCircle,
   TrendingUp,
   Award,
-  Loader2, Mic, MicOff } from 'lucide-react';
+  Loader2, Mic, MicOff, Volume2 } from 'lucide-react';
+import { voiceService } from '../lib/voiceAssistant';
 
 // Render bold text parts
 const parseBoldText = (text: string) => {
@@ -233,7 +234,7 @@ export const AIAssistant: React.FC = () => {
         try {
           recognitionRef.current.stop();
         } catch (e) {
-          console.error("Error stopping speech recognition:", e);
+          console.warn("Notice stopping speech recognition:", e);
         }
       }
       setIsRecording(false);
@@ -278,7 +279,7 @@ export const AIAssistant: React.FC = () => {
       };
 
       recognition.onerror = (e: any) => {
-        console.error("Speech recognition error:", e);
+        console.warn("Speech recognition notice:", e?.error || e);
         setIsRecording(false);
       };
 
@@ -288,7 +289,7 @@ export const AIAssistant: React.FC = () => {
 
       recognition.start();
     } catch (err) {
-      console.error("Error starting SpeechRecognition:", err);
+      console.warn("Notice starting SpeechRecognition:", err);
       setIsRecording(false);
     }
   };
@@ -574,6 +575,25 @@ export const AIAssistant: React.FC = () => {
                         </div>
                       )}
                     </div>
+
+                    {/* Listen Aloud Button for AI Response */}
+                    {isAi && !msg.isThinking && (
+                      <div className="flex items-center gap-2 pl-1">
+                        <button
+                          onClick={() => {
+                            if (voiceService.isSpeaking()) {
+                              voiceService.stop();
+                            } else {
+                              voiceService.speak(msg.text, language === 'hi' ? 'hi' : 'en');
+                            }
+                          }}
+                          className="flex items-center gap-1.5 px-3 py-1.5 bg-krishx-green-50 hover:bg-krishx-green-100 text-krishx-green-700 border border-krishx-green-200/60 rounded-xl text-[11px] font-bold transition-all shadow-sm cursor-pointer"
+                        >
+                          <Volume2 className="w-3.5 h-3.5" />
+                          <span>Listen Aloud • सुनें</span>
+                        </button>
+                      </div>
+                    )}
 
                     {/* Follow-up Chips (Only show if not currently loading) */}
                     {isAi && msg.followUpQuestions && msg.followUpQuestions.length > 0 && !loading && (

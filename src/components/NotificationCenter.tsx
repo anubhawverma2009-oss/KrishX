@@ -21,7 +21,8 @@ import {
   ExternalLink,
   ChevronRight,
   TrendingUp,
-  Inbox
+  Inbox,
+  Briefcase
 } from 'lucide-react';
 
 interface NotificationCenterProps {
@@ -87,6 +88,12 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
           bgColor: 'bg-amber-50 border-amber-100',
           textColor: 'text-amber-700'
         };
+      case 'opportunity':
+        return {
+          icon: <Briefcase className="w-4 h-4 text-amber-600" />,
+          bgColor: 'bg-amber-50 border-amber-100',
+          textColor: 'text-amber-800'
+        };
       case 'system':
       default:
         return {
@@ -140,6 +147,20 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
           }, 3000);
         }
       }, 300);
+    } else if ((notif.type === 'opportunity' || notif.opportunityId) && setActiveTab) {
+      setActiveTab('opportunities');
+      if (notif.opportunityId) {
+        setTimeout(() => {
+          const oppElement = document.getElementById(`opp-${notif.opportunityId}`);
+          if (oppElement) {
+            oppElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            oppElement.classList.add('ring-4', 'ring-amber-500/40', 'transition-all');
+            setTimeout(() => {
+              oppElement.classList.remove('ring-4', 'ring-amber-500/40');
+            }, 3000);
+          }
+        }, 300);
+      }
     } else if (notif.type === 'connection' && setActiveTab) {
       setActiveTab('network');
     }

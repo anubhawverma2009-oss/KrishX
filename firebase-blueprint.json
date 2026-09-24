@@ -1,0 +1,111 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User profile on KrishX professional network",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "krishXId": { "type": "string" },
+        "location": { "type": "string" },
+        "krishScore": { "type": "number" },
+        "crops": { "type": "array" },
+        "skills": { "type": "array" }
+      },
+      "required": ["uid", "name", "email", "krishXId"]
+    },
+    "Opportunity": {
+      "title": "Opportunity",
+      "description": "Agricultural scheme, subsidy, grant, internship, scholarship or training opportunity",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "organization": { "type": "string" },
+        "type": { "type": "string" },
+        "sector": { "type": "string" },
+        "category": { "type": "string" },
+        "description": { "type": "string" },
+        "eligibility": { "type": "string" },
+        "benefits": { "type": "string" },
+        "deadline": { "type": "string" },
+        "location": { "type": "string" },
+        "sourceUrl": { "type": "string" },
+        "sourceName": { "type": "string" },
+        "audience": { "type": "array" },
+        "verifiedAt": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["id", "title", "organization", "type", "description", "eligibility", "benefits", "sourceUrl"]
+    },
+    "Post": {
+      "title": "Post",
+      "description": "Agricultural post shared by a community member",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "authorId": { "type": "string" },
+        "authorName": { "type": "string" },
+        "content": { "type": "string" },
+        "category": { "type": "string" },
+        "topic": { "type": "string" },
+        "likes": { "type": "array" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "authorId", "authorName", "content", "createdAt"]
+    },
+    "Community": {
+      "title": "Community",
+      "description": "Farming community or focus group",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "memberCount": { "type": "number" }
+      },
+      "required": ["id", "name", "description"]
+    },
+    "Notification": {
+      "title": "Notification",
+      "description": "User in-app alert or notification",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "title": { "type": "string" },
+        "body": { "type": "string" },
+        "type": { "type": "string" },
+        "opportunityId": { "type": "string" },
+        "read": { "type": "boolean" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "userId", "title", "body", "type", "read", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "User profiles for KrishX members"
+    },
+    "/opportunities/{oppId}": {
+      "schema": "Opportunity",
+      "description": "Verified agricultural opportunities and schemes"
+    },
+    "/posts/{postId}": {
+      "schema": "Post",
+      "description": "Agricultural knowledge posts"
+    },
+    "/communities/{communityId}": {
+      "schema": "Community",
+      "description": "Farming and agricultural communities"
+    },
+    "/notifications/{notificationId}": {
+      "schema": "Notification",
+      "description": "System and user notifications"
+    }
+  }
+}

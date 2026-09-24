@@ -99,6 +99,11 @@ const AppContent: React.FC = () => {
           onViewProfile={handleViewProfile} 
         />
       )}
+      {activeTab === 'opportunities' && (
+        <Suspense fallback={<LazyLoadingSpinner />}>
+          <Opportunities />
+        </Suspense>
+      )}
       {activeTab === 'ai' && (
         <Suspense fallback={<LazyLoadingSpinner />}>
           <AIAssistant />

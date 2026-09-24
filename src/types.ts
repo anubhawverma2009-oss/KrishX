@@ -53,18 +53,52 @@ export interface UserProfile {
   savedPosts?: string[];
 }
 
-export type OpportunityType = 'Scheme' | 'Grant' | 'Job' | 'Internship' | 'Admission' | 'Program' | 'Training' | 'Startup' | 'Scholarship';
+export type OpportunitySector = 'Government' | 'Private';
+
+export type OpportunityCategory = 
+  | 'Government Schemes'
+  | 'Subsidies'
+  | 'Grants'
+  | 'Internships'
+  | 'Scholarships'
+  | 'Training'
+  | 'Certifications'
+  | 'Jobs'
+  | 'Fellowships'
+  | 'Competitions'
+  | 'Mentorship'
+  | 'Startup'
+  | 'Other Agriculture Opportunities';
+
+export type OpportunityAudience = 
+  | 'Farmer'
+  | 'Student'
+  | 'Rural Youth'
+  | 'Professional'
+  | 'Other Agriculture User';
+
+export type OpportunityType = 'Scheme' | 'Grant' | 'Job' | 'Internship' | 'Admission' | 'Program' | 'Training' | 'Startup' | 'Scholarship' | 'Government' | 'Private';
 
 export interface Opportunity {
   id: string;
   title: string;
   organization: string;
   type: OpportunityType;
+  sector?: OpportunitySector;
+  category: OpportunityCategory | string;
   description: string;
+  whoCanApply?: string;
   eligibility: string;
   benefits: string;
+  deadline?: string;
+  location?: string;
+  sourceUrl?: string;
+  sourceName?: string;
   link: string;
+  audience?: OpportunityAudience[] | string[];
+  verifiedAt?: string;
   createdAt: string;
+  updatedAt?: string;
   highlightColor?: string;
 }
 export interface Post {
@@ -127,10 +161,11 @@ export interface AppNotification {
   senderId?: string;
   senderName?: string;
   senderPhoto?: string;
-  type: 'like' | 'comment' | 'connection' | 'alert' | 'system';
+  type: 'like' | 'comment' | 'connection' | 'alert' | 'system' | 'opportunity';
   title: string;
   body: string;
   postId?: string;
+  opportunityId?: string;
   createdAt: string;
   read: boolean;
 }

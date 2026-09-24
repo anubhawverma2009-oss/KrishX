@@ -9,9 +9,10 @@ export const translations = {
     slogan: 'भारत के किसानों का अपना डिजिटल प्रोफेशनल नेटवर्क',
     nav: {
       home: 'होम',
+      opportunities: 'अवसर',
+      network: 'नेटवर्क',
       ai: 'एआई',
       discover: 'खोजें',
-      network: 'नेटवर्क',
       profile: 'प्रोफ़ाइल'
     },
     home: {
@@ -100,9 +101,10 @@ export const translations = {
     slogan: "India's Professional Network for Farmers",
     nav: {
       home: 'Home',
+      opportunities: 'Opportunities',
+      network: 'Network',
       ai: 'AI',
       discover: 'Discover',
-      network: 'Network',
       profile: 'Profile'
     },
     home: {
