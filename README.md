@@ -275,4 +275,4 @@ This project is licensed under the MIT License.
 
 ## 👨‍💻 Author
 
-Developed for the Indian agricultural community and digital empowerment of farmers.
+Developed by Anubhav Verma for the Indian agricultural community and digital empowerment of farmers.
